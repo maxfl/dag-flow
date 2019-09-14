@@ -2,17 +2,6 @@
 
 from dagflow import *
 
-def printer(fcn, inputs, outputs, node):
-    print('Evaluate {node}'.format(node=node._name))
-    fcn(inputs, outputs, node)
-    print('    ... done with {node}'.format(node=node._name))
-
-def toucher(fcn, inputs, outputs, node):
-    for i, input in enumerate(inputs.values()):
-        print('    touch input {: 2d} {}.{}'.format(i, node._name, input._name))
-        input.touch()
-    fcn(inputs, outputs, node)
-
 def test_01():
     i = Input('input', None)
     o = Output('output', None)
@@ -118,7 +107,9 @@ def test_08():
     n2.taint()
     final.data()
 
-    import IPython; IPython.embed()
+    print('Taint n3')
+    n3.taint()
+    final.data()
 
 test_01()
 test_02()

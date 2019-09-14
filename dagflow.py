@@ -80,6 +80,9 @@ class Input(object):
 
         self._output = output
 
+    def name(self):
+        return self._name
+
     def tainted(self):
         return self._output.tainted()
 
@@ -98,6 +101,18 @@ class Input(object):
     def taint(self):
         self._node.taint()
 
+    def output(self):
+        return self._output
+
+    def connected(self):
+        return self._output is not undefinedoutput
+
+    def free(self):
+        return self._output is undefinedoutput
+
+    def node(self):
+        return self._node
+
     __lshift__  = lshift
     __rrshift__ = lshift
 
@@ -113,6 +128,9 @@ class Output(object):
         self._name = name
         self._node=node
         self._inputs=[]
+
+    def name(self):
+        return self._name
 
     def connect_to(self, input):
         if not isinstance(input, Input):
@@ -147,6 +165,15 @@ class Output(object):
     def iter_outputs(self):
         yield self
 
+    def connected(self):
+        return bool(self._inputs)
+
+    def free(self):
+        return not bool(self._inputs)
+
+    def inputs(self):
+        return self._inputs
+
 class Node(object):
     _name = undefinedname
     _inputs  = None
@@ -163,6 +190,9 @@ class Node(object):
         self._inputs = OrderedDict()
         self._outputs = OrderedDict()
         self._graph = graph
+
+    def name(self):
+        return self._name
 
     def _add_input(self, name, corresponding_output=undefinedoutput):
         if name in self._inputs:
@@ -191,6 +221,12 @@ class Node(object):
         output = self._add_output(oname)
         input = self._add_input(iname, output)
         return input, output
+
+    def inputs(self):
+        return self._inputs.values()
+
+    def outputs(self):
+        return self._outputs.values()
 
     def _wrap_fcn(self, wrap_fcn, *other_fcns):
         prev_fcn = self._fcn
@@ -275,3 +311,120 @@ class Graph(object):
         for node in self._nodes:
             node._unwrap_fcn()
 
+class GraphDot(object):
+    _graph = None
+    def __init__(self, dag, **kwargs):
+        kwargs.setdefault('fontsize', 10)
+        kwargs.setdefault('labelfontsize', 10)
+        kwargs.setdefault('rankdir', 'LR')
+
+        self._nodes_dag_dot = OrderedDict()
+        self._nodes_dot_dag = OrderedDict()
+        self._nodes_open_input_dag_dot = OrderedDict()
+        self._nodes_open_input_dot_dag = OrderedDict()
+        self._nodes_open_output_dag_dot = OrderedDict()
+        self._nodes_open_output_dot_dag = OrderedDict()
+        self._edges_dag_dot = OrderedDict()
+        self._edges_dot_dag = OrderedDict()
+
+        import pygraphviz as G
+        self._graph=G.AGraph(directed=True, strict=False,**kwargs)
+
+        self._transform(dag)
+
+    def _transform(self, dag):
+        for nodedag in dag._nodes:
+            self._add_node(nodedag)
+
+    def get_id(self, object, suffix=''):
+        return '{}_{!s}'.format(type(object).__name__, id(object))+suffix
+
+    def get_color(self, node):
+        if not node:
+            return 'gray'
+
+        if node.tainted():
+            return 'red'
+
+        return 'green'
+
+    def _add_node(self, nodedag):
+        styledict = dict(shape='Mrecord', color=self.get_color(nodedag))
+
+        label=nodedag.name()
+        nodedot = self._graph.add_node(self.get_id(nodedag), label=label, **styledict)
+
+        self._nodes_dag_dot[nodedag] = nodedot
+        self._nodes_dot_dag[nodedot] = nodedag
+
+        self._add_open_inputs(nodedag)
+        self._add_edges(nodedag)
+
+    def _add_open_inputs(self, nodedag):
+        for input in nodedag.inputs():
+            if input.connected():
+                continue
+
+            self._add_open_input(input, nodedag)
+
+    def _add_open_input(self, input, nodedag):
+        styledict = dict(color=self.get_color(None))
+
+        source = self.get_id(input, '_in')
+        target = self.get_id(nodedag)
+
+        nodein = self._graph.add_node(source, shape='point', **styledict)
+        edge   = self._graph.add_edge(source, target, **styledict)
+
+        self._nodes_open_input_dag_dot[input] = nodein
+        self._nodes_open_input_dot_dag[nodein] = input
+
+    def _add_edges(self, nodedag):
+        for output in nodedag.outputs():
+            if output.connected():
+                for input in output.inputs():
+                    self._add_edge(nodedag, output, input)
+            else:
+                self._add_open_output(nodedag, output)
+
+    def _add_open_output(self, nodedag, output):
+        styledict = dict(color=self.get_color(nodedag))
+        source = self.get_id(nodedag)
+        target = self.get_id(output, '_out')
+
+        nodeout = self._graph.add_node(target, shape='point', **styledict)
+        edge    = self._graph.add_edge(source, target, arrowhead='empty', **styledict)
+
+        self._nodes_open_output_dag_dot[output]  = nodeout
+        self._nodes_open_output_dot_dag[nodeout] = output
+
+    def _add_edge(self, nodedag, output, input):
+        styledict = dict(color=self.get_color(nodedag))
+
+        source = self.get_id(nodedag)
+        target = self.get_id(input.node())
+        edge   = self._graph.add_edge(source, target, **styledict)
+
+        self._edges_dag_dot[input] = edge
+        self._edges_dot_dag[edge]  = input
+
+    def savegraph(self, fname, verbose=True):
+        if verbose:
+            print('Write output file:', fname)
+
+        if fname.endswith('.dot'):
+            self._graph.write(fname)
+        else:
+            self._graph.layout(prog='dot')
+            self._graph.draw(fname)
+
+def printer(fcn, inputs, outputs, node):
+    print('Evaluate {node}'.format(node=node.name()))
+    fcn(inputs, outputs, node)
+    print('    ... done with {node}'.format(node=node.name()))
+
+def toucher(fcn, inputs, outputs, node):
+    for i, input in enumerate(inputs.values()):
+        print('    touch input {: 2d} {}.{}'.format(i, node.name(), input.name()))
+        input.touch()
+    fcn(inputs, outputs, node)
