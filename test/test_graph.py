@@ -23,10 +23,6 @@ def test_01():
     d = GraphDot(g)
     d.savegraph('output/test1/test_00.png')
 
-    # final.data()
-    # d = GraphDot(g)
-    # d.savegraph('output/test1/test_01.png')
-
 def test_02():
     g = Graph()
     n1 = g.add_node('node1')

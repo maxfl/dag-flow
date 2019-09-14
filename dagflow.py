@@ -183,6 +183,10 @@ class Node(object):
     _outputs = None
     _graph   = undefinedgraph
     _tainted = True
+    _frozen  = False
+    _frozen_tainted  = False
+    _auto_freeze = False
+    _evaluating = False
     _fcn     = None
     _fcn_chain = None
 
@@ -256,20 +260,56 @@ class Node(object):
             yield input
 
     def touch(self, force=False):
+        if self._frozen:
+            return
+
         if not self._tainted and not force:
             return
 
         self.eval()
         self._tainted = False
+        if self._auto_freeze:
+            self._frozen = True
 
     def eval(self):
+        self._evaluating = True
         self._fcn(self._inputs, self._outputs, self)
+        self._evaluating = False
 
     def tainted(self):
         return self._tainted
 
-    def taint(self):
+    def freeze(self):
+        if self._frozen:
+            return
+
         if self._tainted:
+            raise Exception('Unable to freeze tainted node')
+
+        self._frozen = True
+        self._frozen_tainted = False
+
+    def unfreeze(self):
+        if not self._frozen:
+            return
+
+        self._frozen = False
+
+        if self._frozen_tainted:
+            self._frozen_tainted = False
+            self.taint(force=True)
+
+    def evaluating(self):
+        return self._evaluating
+
+    def frozen(self):
+        return self._frozen
+
+    def taint(self, force=False):
+        if self._tainted and not force:
+            return
+
+        if self._frozen:
             return
 
         self._tainted = True
@@ -321,14 +361,10 @@ class GraphDot(object):
         kwargs.setdefault('labelfontsize', 10)
         kwargs.setdefault('rankdir', 'LR')
 
-        self._nodes_dag_dot = OrderedDict()
-        self._nodes_dot_dag = OrderedDict()
-        self._nodes_open_input_dag_dot = OrderedDict()
-        self._nodes_open_input_dot_dag = OrderedDict()
-        self._nodes_open_output_dag_dot = OrderedDict()
-        self._nodes_open_output_dot_dag = OrderedDict()
-        self._edges_dag_dot = OrderedDict()
-        self._edges_dot_dag = OrderedDict()
+        self._nodes = OrderedDict()
+        self._nodes_open_input = OrderedDict()
+        self._nodes_open_output = OrderedDict()
+        self._edges = OrderedDict()
 
         import pygraphviz as G
         self._graph=G.AGraph(directed=True, strict=False,**kwargs)
@@ -339,17 +375,14 @@ class GraphDot(object):
         for nodedag in dag._nodes:
             self._add_node(nodedag)
 
+        for nodedag in dag._nodes:
+            self._add_open_inputs(nodedag)
+            self._add_edges(nodedag)
+
+        self.update_style()
+
     def get_id(self, object, suffix=''):
         return '{}_{!s}'.format(type(object).__name__, id(object))+suffix
-
-    def get_color(self, node):
-        if not node:
-            return 'gray'
-
-        if node.tainted():
-            return 'red'
-
-        return 'green'
 
     def _add_node(self, nodedag):
         styledict = dict(shape='Mrecord')
@@ -359,13 +392,7 @@ class GraphDot(object):
         self._graph.add_node(target, label=label, **styledict)
         nodedot = self._graph.get_node(target)
 
-        self._nodes_dag_dot[nodedag] = nodedot
-        self._nodes_dot_dag[nodedot] = nodedag
-
-        self._add_open_inputs(nodedag)
-        self._add_edges(nodedag)
-
-        self.update_style()
+        self._nodes[nodedag] = nodedot
 
     def _add_open_inputs(self, nodedag):
         for input in nodedag.inputs():
@@ -380,15 +407,14 @@ class GraphDot(object):
         source = self.get_id(input, '_in')
         target = self.get_id(nodedag)
 
+        self._graph.add_node(source, shape='point', **styledict)
         self._graph.add_edge(source, target, **styledict)
-        nodein = self._graph.get_node(source)
-        edge = self._graph.get_edge(source, target)
+        nodein  = self._graph.get_node(source)
+        edge    = self._graph.get_edge(source, target)
+        nodeout = self._graph.get_node(target)
 
-        self._nodes_open_input_dag_dot[input] = nodein
-        self._nodes_open_input_dot_dag[nodein] = input
-
-        self._edges_dag_dot[input] = edge
-        self._edges_dot_dag[edge]  = input
+        self._nodes_open_input[input] = nodein
+        self._edges[input] = (nodein, edge, nodeout)
 
     def _add_edges(self, nodedag):
         for output in nodedag.outputs():
@@ -404,15 +430,14 @@ class GraphDot(object):
         target = self.get_id(output, '_out')
 
         self._graph.add_node(target, shape='point', **styledict)
-        nodeout = self._graph.get_node(source)
         self._graph.add_edge(source, target, arrowhead='empty', **styledict)
-        edge = self._graph.get_edge(source, target)
+        nodein  = self._graph.get_node(source)
+        edge    = self._graph.get_edge(source, target)
+        nodeout = self._graph.get_node(target)
 
-        self._nodes_open_output_dag_dot[output]  = nodeout
-        self._nodes_open_output_dot_dag[nodeout] = output
+        self._nodes_open_output[output]  = nodeout
 
-        self._edges_dag_dot[output] = edge
-        self._edges_dot_dag[edge]   = output
+        self._edges[output] = (nodein, edge, nodeout)
 
     def _add_edge(self, nodedag, output, input):
         styledict = dict()
@@ -420,17 +445,42 @@ class GraphDot(object):
         source = self.get_id(nodedag)
         target = self.get_id(input.node())
         self._graph.add_edge(source, target, **styledict)
-        edge = self._graph.get_edge(source, target)
 
-        self._edges_dag_dot[input] = edge
-        self._edges_dot_dag[edge]  = input
+        nodein  = self._graph.get_node(source)
+        edge    = self._graph.get_edge(source, target)
+        nodeout = self._graph.get_node(target)
+
+        self._edges[input] = (nodein, edge, nodeout)
+
+    def _set_style_node(self, node, attr):
+        if not node:
+            attr['color'] = 'gray'
+        elif node.evaluating():
+            attr['color'] = 'gold'
+        elif node.tainted():
+            attr['color'] = 'red'
+        else:
+            attr['color'] = 'green'
+
+    def _set_style_edge(self, obj, attrin, attr, attrout):
+        if isinstance(obj, Input):
+            if obj.connected():
+                node = obj.output().node()
+            else:
+                node = None
+                self._set_style_node(node, attrin)
+        else:
+            node = obj.node()
+            self._set_style_node(node, attrout)
+
+        self._set_style_node(node, attr)
 
     def update_style(self):
-        for nodedag, nodedot in self._nodes_dag_dot.items():
-            nodedot.attr['color'] = self.get_color(nodedag)
+        for nodedag, nodedot in self._nodes.items():
+            self._set_style_node(nodedag, nodedot.attr)
 
-        for object, edge in self._edges_dag_dot.items():
-            edge.attr['color'] = self.get_color(object.node())
+        for object, (nodein, edge, nodeout) in self._edges.items():
+            self._set_style_edge(object, nodein.attr, edge.attr, nodeout.attr)
 
     def savegraph(self, fname, verbose=True):
         if verbose:
