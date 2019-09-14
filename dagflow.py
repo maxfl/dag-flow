@@ -171,7 +171,7 @@ class Node(object):
         self._inputs[name] = input
 
         if self._graph is not undefinedgraph:
-            self._graph.add_input(input)
+            self._graph._add_input(input)
 
         return input
 
@@ -183,7 +183,7 @@ class Node(object):
         self._outputs[name] = output
 
         if self._graph is not undefinedgraph:
-            self._graph.add_output(output)
+            self._graph._add_output(output)
 
         return output
 
@@ -261,10 +261,10 @@ class Graph(object):
     def add_nodes(self, pairs):
         return (self.add_node(name, fcn) for name, fcn in pairs)
 
-    def add_input(self, input):
+    def _add_input(self, input):
         self._inputs.append(input)
 
-    def add_output(self, output):
+    def _add_output(self, output):
         self._outputs.append(output)
 
     def _wrap_fcns(self, *args):
