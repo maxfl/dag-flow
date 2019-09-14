@@ -107,6 +107,11 @@ def test_03():
     final.data()
     plot()
 
+    A2.taint()
+    plot()
+    final.data()
+    plot()
+
 test_01()
 test_02()
 test_03()

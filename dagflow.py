@@ -308,11 +308,15 @@ class Node(object):
     def frozen(self):
         return self._frozen
 
+    def frozen_tainted(self):
+        return self._frozen_tainted
+
     def taint(self, force=False):
         if self._tainted and not force:
             return
 
         if self._frozen:
+            self._frozen_tainted = True
             return
 
         self._tainted = True
@@ -462,6 +466,8 @@ class GraphDot(object):
             attr['color'] = 'gold'
         elif node.tainted():
             attr['color'] = 'red'
+        elif node.frozen_tainted():
+            attr['color'] = 'blue'
         else:
             attr['color'] = 'green'
 
