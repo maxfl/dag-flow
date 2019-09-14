@@ -174,6 +174,9 @@ class Output(object):
     def inputs(self):
         return self._inputs
 
+    def node(self):
+        return self._node
+
 class Node(object):
     _name = undefinedname
     _inputs  = None
@@ -349,16 +352,20 @@ class GraphDot(object):
         return 'green'
 
     def _add_node(self, nodedag):
-        styledict = dict(shape='Mrecord', color=self.get_color(nodedag))
+        styledict = dict(shape='Mrecord')
 
         label=nodedag.name()
-        nodedot = self._graph.add_node(self.get_id(nodedag), label=label, **styledict)
+        target=self.get_id(nodedag)
+        self._graph.add_node(target, label=label, **styledict)
+        nodedot = self._graph.get_node(target)
 
         self._nodes_dag_dot[nodedag] = nodedot
         self._nodes_dot_dag[nodedot] = nodedag
 
         self._add_open_inputs(nodedag)
         self._add_edges(nodedag)
+
+        self.update_style()
 
     def _add_open_inputs(self, nodedag):
         for input in nodedag.inputs():
@@ -368,16 +375,20 @@ class GraphDot(object):
             self._add_open_input(input, nodedag)
 
     def _add_open_input(self, input, nodedag):
-        styledict = dict(color=self.get_color(None))
+        styledict = dict()
 
         source = self.get_id(input, '_in')
         target = self.get_id(nodedag)
 
-        nodein = self._graph.add_node(source, shape='point', **styledict)
-        edge   = self._graph.add_edge(source, target, **styledict)
+        self._graph.add_edge(source, target, **styledict)
+        nodein = self._graph.get_node(source)
+        edge = self._graph.get_edge(source, target)
 
         self._nodes_open_input_dag_dot[input] = nodein
         self._nodes_open_input_dot_dag[nodein] = input
+
+        self._edges_dag_dot[input] = edge
+        self._edges_dot_dag[edge]  = input
 
     def _add_edges(self, nodedag):
         for output in nodedag.outputs():
@@ -388,25 +399,38 @@ class GraphDot(object):
                 self._add_open_output(nodedag, output)
 
     def _add_open_output(self, nodedag, output):
-        styledict = dict(color=self.get_color(nodedag))
+        styledict = dict()
         source = self.get_id(nodedag)
         target = self.get_id(output, '_out')
 
-        nodeout = self._graph.add_node(target, shape='point', **styledict)
-        edge    = self._graph.add_edge(source, target, arrowhead='empty', **styledict)
+        self._graph.add_node(target, shape='point', **styledict)
+        nodeout = self._graph.get_node(source)
+        self._graph.add_edge(source, target, arrowhead='empty', **styledict)
+        edge = self._graph.get_edge(source, target)
 
         self._nodes_open_output_dag_dot[output]  = nodeout
         self._nodes_open_output_dot_dag[nodeout] = output
 
+        self._edges_dag_dot[output] = edge
+        self._edges_dot_dag[edge]   = output
+
     def _add_edge(self, nodedag, output, input):
-        styledict = dict(color=self.get_color(nodedag))
+        styledict = dict()
 
         source = self.get_id(nodedag)
         target = self.get_id(input.node())
-        edge   = self._graph.add_edge(source, target, **styledict)
+        self._graph.add_edge(source, target, **styledict)
+        edge = self._graph.get_edge(source, target)
 
         self._edges_dag_dot[input] = edge
         self._edges_dot_dag[edge]  = input
+
+    def update_style(self):
+        for nodedag, nodedot in self._nodes_dag_dot.items():
+            nodedot.attr['color'] = self.get_color(nodedag)
+
+        for object, edge in self._edges_dag_dot.items():
+            edge.attr['color'] = self.get_color(object.node())
 
     def savegraph(self, fname, verbose=True):
         if verbose:
