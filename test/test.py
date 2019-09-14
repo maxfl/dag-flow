@@ -2,6 +2,17 @@
 
 from dagflow import *
 
+def printer(fcn, inputs, outputs, node):
+    print('Evaluate {node}'.format(node=node._name))
+    fcn(inputs, outputs, node)
+    print('    ... done with {node}'.format(node=node._name))
+
+def toucher(fcn, inputs, outputs, node):
+    for i, input in enumerate(inputs.values()):
+        print('    touch input {: 2d} {}.{}'.format(i, node._name, input._name))
+        input.touch()
+    fcn(inputs, outputs, node)
+
 def test_01():
     i = Input('input', None)
     o = Output('output', None)
@@ -66,23 +77,11 @@ def test_06():
 
     (out1, out2) >> n2
 
-    print(final.data())
-
 def test_07():
-    def printer(fcn, inputs, outputs, node):
-        print('Evaluate {node}'.format(node=node._name))
-        fcn(inputs, outputs, node)
-        print('    ... done')
-
-    def toucher(fcn, inputs, outputs, node):
-        for input in inputs.values():
-            input.touch()
-
-    n1 = Node('node1')
-    n2 = Node('node2')
-
-    n1._wrap_fcn(printer, toucher)
-    n2._wrap_fcn(printer, toucher)
+    g = Graph()
+    n1 = g.add_node('node1')
+    n2 = g.add_node('node2')
+    g._wrap_fcns(toucher, printer)
 
     out1 = n1._add_output('o1')
     out2 = n1._add_output('o2')
@@ -92,7 +91,33 @@ def test_07():
 
     (out1, out2) >> n2
 
-    print(final.data())
+    final.data()
+
+def test_08():
+    g = Graph()
+    n1 = g.add_node('node1')
+    n2 = g.add_node('node2')
+    n3 = g.add_node('node3')
+    g._wrap_fcns(toucher, printer)
+
+    out1 = n1._add_output('o1')
+    out2 = n1._add_output('o2')
+
+    _, out3 = n2._add_pair('i1', 'o1')
+    n2._add_input('i2')
+
+    _, final = n3._add_pair('i1', 'o1')
+
+    (out1, out2) >> n2
+    out3 >> n3
+
+    print()
+    final.data()
+
+    print('Taint n2')
+    n2.taint()
+    final.data()
+
     import IPython; IPython.embed()
 
 test_01()
@@ -102,3 +127,4 @@ test_04()
 test_05()
 test_06()
 test_07()
+test_08()

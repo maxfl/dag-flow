@@ -7,6 +7,9 @@ class Undefined(object):
     def __str__(self):
         return 'Undefined '+self.what
 
+    def __repr__(self):
+        return 'Undefined("{what}")'.format(what=self.what)
+
 undefinedname = Undefined('name')
 undefineddata = Undefined('data')
 undefineddatatype = Undefined('datatype')
@@ -92,6 +95,9 @@ class Input(object):
     def corresponding_output(self):
         return self._corresponding_output
 
+    def taint(self):
+        self._node.taint()
+
     __lshift__  = lshift
     __rrshift__ = lshift
 
@@ -125,7 +131,8 @@ class Output(object):
         return self._node.tainted()
 
     def taint(self):
-        return self._node.taint()
+        for input in self._inputs:
+            input.taint()
 
     def touch(self):
         return self._node.touch()
@@ -219,9 +226,14 @@ class Node(object):
     def eval(self):
         self._fcn(self._inputs, self._outputs, self)
 
+    def tainted(self):
+        return self._tainted
+
     def taint(self):
         if self._tainted:
             return
+
+        self._tainted = True
 
         for output in self._outputs.values():
             output.taint()
@@ -246,9 +258,20 @@ class Graph(object):
         self._nodes.append(newnode)
         return newnode
 
+    def add_nodes(self, pairs):
+        return (self.add_node(name, fcn) for name, fcn in pairs)
+
     def add_input(self, input):
         self._inputs.append(input)
 
     def add_output(self, output):
         self._outputs.append(output)
+
+    def _wrap_fcns(self, *args):
+        for node in self._nodes:
+            node._wrap_fcn(*args)
+
+    def _unwrap_fcns(self):
+        for node in self._nodes:
+            node._unwrap_fcn()
 
