@@ -230,10 +230,10 @@ class Node(object):
         return input, output
 
     def inputs(self):
-        return self._inputs.values()
+        return tuple(self._inputs.values())
 
     def outputs(self):
-        return self._outputs.values()
+        return tuple(self._outputs.values())
 
     def _wrap_fcn(self, wrap_fcn, *other_fcns):
         prev_fcn = self._fcn
@@ -278,6 +278,9 @@ class Node(object):
 
     def tainted(self):
         return self._tainted
+
+    def set_auto_freeze(self):
+        self._auto_freeze = True
 
     def freeze(self):
         if self._frozen:
@@ -474,6 +477,12 @@ class GraphDot(object):
             self._set_style_node(node, attrout)
 
         self._set_style_node(node, attr)
+
+        if node:
+            if node.frozen():
+                attrin['style']='dashed'
+                attr['style']='dashed'
+                attr['arrowhead']='tee'
 
     def update_style(self):
         for nodedag, nodedot in self._nodes.items():
