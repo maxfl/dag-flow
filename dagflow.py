@@ -468,6 +468,8 @@ class GraphDot(object):
             attr['color'] = 'red'
         elif node.frozen_tainted():
             attr['color'] = 'blue'
+        elif node.frozen():
+            attr['color'] = 'cyan'
         else:
             attr['color'] = 'green'
 
@@ -496,6 +498,9 @@ class GraphDot(object):
 
         for object, (nodein, edge, nodeout) in self._edges.items():
             self._set_style_edge(object, nodein.attr, edge.attr, nodeout.attr)
+
+    def set_label(self, label):
+        self._graph.graph_attr['label']=label
 
     def savegraph(self, fname, verbose=True):
         if verbose:

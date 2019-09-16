@@ -50,16 +50,20 @@ def test_02():
 counter = 0
 def test_03():
     g = Graph()
-    def plot():
+    label = None
+    def plot(suffix=''):
         global counter
         d = GraphDot(g)
+        newlabel = label and label+suffix or suffix
+        if newlabel is not None:
+            d.set_label(newlabel)
         d.savegraph('output/test3/test_{:03d}.png'.format(counter))
         counter+=1
 
     def plotter(fcn, inputs, outputs, node):
-        plot()
+        plot('[start evaluating {}]'.format(node.name()))
         fcn(inputs, outputs, node)
-        plot()
+        plot('[done evaluating {}]'.format(node.name()))
 
     A1 = g.add_node('A1')
     A2 = g.add_node('A2')
@@ -94,22 +98,70 @@ def test_03():
     D.outputs()[1] >> F
     B >> E
 
+    label = 'Initial graph state.'
     plot()
 
+    label = 'Read E...'
+    plot()
+    plot()
+    plot()
     final.data()
+    label = 'Done reading E.'
     plot()
 
+    label = 'Taint D.'
+    plot()
+    plot()
+    plot()
     D.taint()
     plot()
+    label = 'Read F...'
     other.data()
+    label = 'Done reading F.'
     plot()
 
+    label = 'Read E...'
+    plot()
+    plot()
+    plot()
     final.data()
+    label = 'Done reading E.'
     plot()
 
+    label = 'Taint A2.'
+    plot()
+    plot()
+    plot()
     A2.taint()
     plot()
+    label = 'Read E...'
+    plot()
     final.data()
+    label = 'Done reading E.'
+    plot()
+
+    label = 'Unfreeze A2 (tainted).'
+    plot()
+    plot()
+    plot()
+    A2.unfreeze()
+    plot()
+    label = 'Read E...'
+    plot()
+    final.data()
+    label = 'Done reading E.'
+    plot()
+
+    label = 'Unfreeze A2 (not tainted).'
+    plot()
+    plot()
+    plot()
+    A2.unfreeze()
+    plot()
+    label = 'Read E...'
+    plot()
+    final.data()
+    label = 'Done reading E.'
     plot()
 
 test_01()
