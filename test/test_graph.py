@@ -74,6 +74,7 @@ def test_03():
     D  = g.add_node('D')
     E  = g.add_node('E')
     F  = g.add_node('F')
+    H  = g.add_node('H')
 
     A2.set_auto_freeze()
 
@@ -90,13 +91,14 @@ def test_03():
     C2._add_output('o1')
     D._add_pair('i1', 'o1')
     D._add_pair('i2', 'o2')
+    H._add_pair('i1', 'o1')
     _, other = F._add_pair('i1', 'o1')
     _, final = E._add_pair('i1', 'o1')
 
-    (A1.outputs()[0], A2.outputs()[0], A3.outputs()[0], D.outputs()[0]) >> B
-    (C1.outputs()[0], C2.outputs()[0]) >> D
-    D.outputs()[1] >> F
-    B >> E
+    (A1, A2, A3, D[:1]) >> B >> (E, H)
+    ((C1, C2) >> D[:,1]) >> F
+
+    g.print()
 
     label = 'Initial graph state.'
     plot()
@@ -164,6 +166,7 @@ def test_03():
     label = 'Done reading E.'
     plot()
 
-test_01()
-test_02()
-test_03()
+if __name__ == "__main__":
+    test_01()
+    test_02()
+    test_03()

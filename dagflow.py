@@ -1,4 +1,15 @@
+from __future__ import print_function
+
 from collections import OrderedDict
+from collections import Iterable
+import itertools as I
+
+def IsIterable(obj):
+    return isinstance(obj, Iterable) and not isinstance(obj, str)
+
+def nth(iterable, n):
+    "Returns the nth item or a default value"
+    return next(I.islice(iterable, n, None))
 
 class Undefined(object):
     def __init__(self, what):
@@ -10,55 +21,142 @@ class Undefined(object):
     def __repr__(self):
         return 'Undefined("{what}")'.format(what=self.what)
 
+    def __bool__(self):
+        return False
+
 undefinedname = Undefined('name')
 undefineddata = Undefined('data')
 undefineddatatype = Undefined('datatype')
 undefinednode = Undefined('node')
 undefinedgraph = Undefined('graph')
 undefinedoutput = Undefined('output')
+undefinedleg = Undefined('leg')
 
 def iter_inputs(inputs):
     if isinstance(inputs, Input):
         yield inputs
     else:
-        if isinstance(inputs, (tuple, list)):
-            iterable = inputs
-        elif isinstance(inputs, OrderedDict):
+        if isinstance(inputs, OrderedDict):
             iterable = inputs.values()
-        elif isinstance(inputs, Node):
-            iterable = inputs.iter_inputs()
+        elif IsIterable(inputs):
+            iterable = inputs
+        elif isinstance(inputs, Legs):
+            iterable = inputs._iter_inputs()
         else:
             raise Exception('Do not know how to iterate inputs')
 
         for input in iterable:
-            yield input
+            for input1 in iter_inputs(input):
+                yield input1
 
 def iter_outputs(outputs):
     if isinstance(outputs, Output):
         yield outputs
     else:
-        if isinstance(outputs, (tuple, list)):
-            iterable = outputs
-        elif isinstance(outputs, OrderedDict):
+        if isinstance(outputs, OrderedDict):
             iterable = outputs.values()
-        elif isinstance(outputs, Node):
-            iterable = outputs.iter_outputs()
+        elif IsIterable(outputs):
+            iterable = outputs
+        elif isinstance(outputs, Legs):
+            iterable = outputs._iter_outputs()
         else:
             raise Exception('Do not know how to iterate outputs')
 
         for output in iterable:
-            yield output
+            for output1 in iter_outputs(output):
+                yield output1
+
+def iter_corresponding_outputs(inputs):
+    if isinstance(inputs, Input):
+        yield inputs.corresponding_output()
+    elif isinstance(inputs, Output):
+        yield inputs
+    else:
+        if isinstance(inputs, OrderedDict):
+            iterable = inputs.values()
+        elif IsIterable(inputs):
+            iterable = inputs
+        elif isinstance(inputs, Legs):
+            yield inputs
+            return
+        else:
+            raise Exception('Do not know how to iterate corresponding outputs')
+
+        for output in iterable:
+            for output1 in iter_corresponding_outputs(output):
+                yield output1
 
 def rshift(outputs, inputs):
-    corresponding_outputs = tuple()
-    for output, input in zip(iter_outputs(outputs), iter_inputs(inputs)):
-        output.connect_to(input)
-        corresponding_outputs += input.corresponding_output(),
+    corresponding_outputs = tuple(iter_corresponding_outputs(inputs))
+    for output, input in I.zip_longest(iter_outputs(outputs), iter_inputs(inputs), fillvalue=undefinedleg):
+        if output is undefinedleg or input is undefinedleg:
+            raise Exception('Unable to connect mismatching lists')
 
+        output.connect_to(input)
+
+    if len(corresponding_outputs)==1:
+        return corresponding_outputs[0]
     return corresponding_outputs
 
 def lshift(inputs, outputs):
     return rshift(outputs, inputs)
+
+class EdgeContainer(object):
+    _dict = None
+    _datatype = None
+    def __init__(self, iterable=None):
+        object.__init__(self)
+        self._dict = OrderedDict()
+
+        if iterable:
+            self.__iadd__(iterable)
+
+    def __iadd__(self, value):
+        if IsIterable(value):
+            for v in value:
+                self.__iadd__(v)
+            return self
+
+        if self._datatype and not isinstance(value, self._datatype):
+            raise Exception('The container does not support this type of data')
+
+        name = value.name()
+        if not name:
+            raise Exception('May not add objects with undefined name')
+
+        if name in self._dict:
+            raise Exception('May not add duplicated items')
+
+        self._dict[name] = value
+
+        return self
+
+    def __getitem__(self, key):
+        if isinstance(key, int):
+            return nth(self._dict.values(), key)
+        elif isinstance(key, str):
+            return self._dict[key]
+        elif isinstance(key, slice):
+            return tuple(self._dict.values())[key]
+        elif isinstance(key, Iterable):
+            return tuple(self.__getitem__(k) for k in key)
+
+        raise Exception('Unsupported key type: '+type(key).__name__)
+
+    def __getattr__(self, name):
+        return self._dict[name]
+
+    def __len__(self):
+        return len(self._dict)
+
+    def __dir__(self):
+        return self._dict.keys()
+
+    def __iter__(self):
+        return iter(self._dict.values())
+
+    def __contains__(self, name):
+        return name in self._dict
 
 class Input(object):
     _name  = undefinedname
@@ -71,11 +169,14 @@ class Input(object):
         self._node=node
         self._corresponding_output=corresponding_output
 
+    def __str__(self):
+        return '->| {name}'.format(name=self._name)
+
     def set_output(self, output):
         if not isinstance(output, Output):
             raise exception('Bad output type')
 
-        if self._output is not undefinedoutput:
+        if self._output:
             raise ConnectException('Output is already connected to the input')
 
         self._output = output
@@ -105,7 +206,7 @@ class Input(object):
         return self._output
 
     def connected(self):
-        return self._output is not undefinedoutput
+        return self._output
 
     def free(self):
         return self._output is undefinedoutput
@@ -128,6 +229,9 @@ class Output(object):
         self._name = name
         self._node=node
         self._inputs=[]
+
+    def __str__(self):
+        return '|-> {name}'.format(name=self._name)
 
     def name(self):
         return self._name
@@ -162,7 +266,7 @@ class Output(object):
     def datatype(self):
         return self._datatype
 
-    def iter_outputs(self):
+    def _iter_outputs(self):
         yield self
 
     def connected(self):
@@ -177,10 +281,74 @@ class Output(object):
     def node(self):
         return self._node
 
-class Node(object):
+class Inputs(EdgeContainer):
+    _datatype = Input
+    def __init__(self, iterable=None):
+        EdgeContainer.__init__(self, iterable)
+
+    def __str__(self):
+        return '->[{}]|'.format(len(self))
+
+class Outputs(EdgeContainer):
+    _datatype = Output
+    def __init__(self, iterable=None):
+        EdgeContainer.__init__(self, iterable)
+
+    def __str__(self):
+        return '|[{}]->'.format(len(self))
+
+class Legs(object):
+    def __init__(self, inputs=None, outputs=None):
+        object.__init__(self)
+
+        self.inputs = Inputs(inputs)
+        self.outputs = Outputs(outputs)
+
+    def __getitem__(self, key):
+        if len(key)!=2:
+            raise Exception('Legs key should be of length 2')
+
+        ikey, okey = key
+
+        if ikey and okey:
+            if isinstance(ikey, (int, str)):
+                ikey = ikey,
+            if isinstance(okey, (int, str)):
+                okey = okey,
+            return Legs(self.inputs[ikey], self.outputs[okey])
+
+        if ikey:
+            return self.inputs[ikey]
+
+        if okey:
+            return self.outputs[okey]
+
+        raise Exception('Empty keys specified')
+
+    def __str__(self):
+        return '->[{}],[{}]->'.format(len(self.inputs), len(self.outputs))
+
+    def _iter_outputs(self):
+        return iter(self.outputs)
+
+    def _iter_inputs(self):
+        return iter(self.inputs)
+
+    def print(self):
+        for i, input in enumerate(self.inputs):
+            print(i, input)
+
+        for i, output in enumerate(self.outputs):
+            print(i, output)
+
+    __rshift__  = rshift
+    __rlshift__ = rshift
+    __lshift__  = lshift
+    __rrshift__ = lshift
+
+
+class Node(Legs):
     _name = undefinedname
-    _inputs  = None
-    _outputs = None
     _graph   = undefinedgraph
     _tainted = True
     _frozen  = False
@@ -191,35 +359,40 @@ class Node(object):
     _fcn_chain = None
 
     def __init__(self, name, fcn=lambda i, o, n: None, graph=undefinedgraph):
+        Legs.__init__(self)
         self._name = name
         self._fcn = fcn
         self._fcn_chain = []
-        self._inputs = OrderedDict()
-        self._outputs = OrderedDict()
         self._graph = graph
 
     def name(self):
         return self._name
 
     def _add_input(self, name, corresponding_output=undefinedoutput):
-        if name in self._inputs:
+        if IsIterable(name):
+            return tuple(self._add_output(n) for n in name)
+
+        if name in self.inputs:
             raise Exception('Input {node}.{input} already exist', node=self.name, input=name)
         input = Input(name, self, corresponding_output)
-        self._inputs[name] = input
+        self.inputs += input
 
-        if self._graph is not undefinedgraph:
+        if self._graph:
             self._graph._add_input(input)
 
         return input
 
     def _add_output(self, name):
-        if name in self._outputs:
+        if IsIterable(name):
+            return tuple(self._add_output(n) for n in name)
+
+        if name in self.outputs:
             raise Exception('Output {node}.{output} already exist', node=self.name, output=name)
 
         output = Output(name, self)
-        self._outputs[name] = output
+        self.outputs += output
 
-        if self._graph is not undefinedgraph:
+        if self._graph:
             self._graph._add_output(output)
 
         return output
@@ -228,12 +401,6 @@ class Node(object):
         output = self._add_output(oname)
         input = self._add_input(iname, output)
         return input, output
-
-    def inputs(self):
-        return tuple(self._inputs.values())
-
-    def outputs(self):
-        return tuple(self._outputs.values())
 
     def _wrap_fcn(self, wrap_fcn, *other_fcns):
         prev_fcn = self._fcn
@@ -251,14 +418,6 @@ class Node(object):
             raise Exception('Unable to unwrap bare function')
         self._fcn = self._fcn_chain.pop()
 
-    def iter_outputs(self):
-        for output in self._outputs.values():
-            yield output
-
-    def iter_inputs(self):
-        for input in self._inputs.values():
-            yield input
-
     def touch(self, force=False):
         if self._frozen:
             return
@@ -273,7 +432,7 @@ class Node(object):
 
     def eval(self):
         self._evaluating = True
-        self._fcn(self._inputs, self._outputs, self)
+        self._fcn(self.inputs, self.outputs, self)
         self._evaluating = False
 
     def tainted(self):
@@ -321,13 +480,22 @@ class Node(object):
 
         self._tainted = True
 
-        for output in self._outputs.values():
+        for output in self.outputs:
             output.taint()
 
-    __rshift__  = rshift
-    __rlshift__ = rshift
-    __lshift__  = lshift
-    __rrshift__ = lshift
+    def __getitem__(self, key):
+        if isinstance(key, (int, slice, str)):
+            return self.outputs[key]
+
+        return Legs.__getitem__(self, key)
+
+    def print(self):
+        print('Node {}: ->[{}],[{}]->'.format(self._name, len(self.inputs), len(self.outputs)))
+        for i, input in enumerate(self.inputs):
+            print('  ', i, input)
+
+        for i, output in enumerate(self.outputs):
+            print('  ', i, output)
 
 class Graph(object):
     _nodes  = None
@@ -360,6 +528,11 @@ class Graph(object):
     def _unwrap_fcns(self):
         for node in self._nodes:
             node._unwrap_fcn()
+
+    def print(self):
+        print('Graph with {} nodes'.format(len(self._nodes)))
+        for node in self._nodes:
+            node.print()
 
 class GraphDot(object):
     _graph = None
@@ -402,7 +575,7 @@ class GraphDot(object):
         self._nodes[nodedag] = nodedot
 
     def _add_open_inputs(self, nodedag):
-        for input in nodedag.inputs():
+        for input in nodedag.inputs:
             if input.connected():
                 continue
 
@@ -424,7 +597,7 @@ class GraphDot(object):
         self._edges[input] = (nodein, edge, nodeout)
 
     def _add_edges(self, nodedag):
-        for output in nodedag.outputs():
+        for output in nodedag.outputs:
             if output.connected():
                 for input in output.inputs():
                     self._add_edge(nodedag, output, input)
@@ -490,7 +663,9 @@ class GraphDot(object):
             if node.frozen():
                 attrin['style']='dashed'
                 attr['style']='dashed'
-                attr['arrowhead']='tee'
+                # attr['arrowhead']='tee'
+            else:
+                attr['style']=''
 
     def update_style(self):
         for nodedag, nodedot in self._nodes.items():
@@ -518,7 +693,7 @@ def printer(fcn, inputs, outputs, node):
     print('    ... done with {node}'.format(node=node.name()))
 
 def toucher(fcn, inputs, outputs, node):
-    for i, input in enumerate(inputs.values()):
+    for i, input in enumerate(inputs):
         print('    touch input {: 2d} {}.{}'.format(i, node.name(), input.name()))
         input.touch()
     fcn(inputs, outputs, node)
