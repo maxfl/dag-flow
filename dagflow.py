@@ -349,6 +349,7 @@ class Legs(object):
 
 class Node(Legs):
     _name = undefinedname
+    _label = undefinedname
     _graph   = undefinedgraph
     _tainted = True
     _frozen  = False
@@ -358,15 +359,23 @@ class Node(Legs):
     _fcn     = None
     _fcn_chain = None
 
-    def __init__(self, name, fcn=lambda i, o, n: None, graph=undefinedgraph):
+    def __init__(self, name, fcn=lambda i, o, n: None, graph=undefinedgraph, **kwargs):
         Legs.__init__(self)
         self._name = name
-        self._fcn = fcn
+        self._fcn = kwargs.pop('fcn', lambda i, o, n: None)
         self._fcn_chain = []
-        self._graph = graph
+        self._graph = kwargs.pop('graph', undefinedgraph)
+        self._label = kwargs.pop('label', undefinedname)
 
     def name(self):
         return self._name
+
+    def label(self, *args, **kwargs):
+        if self._label:
+            kwargs.setdefault('name', self._name)
+            return self._label.format(*args, **kwargs)
+
+        return self._label
 
     def _add_input(self, name, corresponding_output=undefinedoutput):
         if IsIterable(name):
@@ -507,8 +516,8 @@ class Graph(object):
         self._inputs  = []
         self._outputs = []
 
-    def add_node(self, name, fcn=lambda i, o, n: None):
-        newnode = Node(name, fcn, self)
+    def add_node(self, name, fcn=lambda i, o, n: None, **kwargs):
+        newnode = Node(name, fcn, self, **kwargs)
         self._nodes.append(newnode)
         return newnode
 
@@ -567,7 +576,7 @@ class GraphDot(object):
     def _add_node(self, nodedag):
         styledict = dict(shape='Mrecord')
 
-        label=nodedag.name()
+        label=nodedag.label() or nodedag.name()
         target=self.get_id(nodedag)
         self._graph.add_node(target, label=label, **styledict)
         nodedot = self._graph.get_node(target)

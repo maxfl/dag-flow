@@ -66,7 +66,7 @@ def test_03():
         plot('[done evaluating {}]'.format(node.name()))
 
     A1 = g.add_node('A1')
-    A2 = g.add_node('A2')
+    A2 = g.add_node('A2', label='{name}|frozen node')
     A3 = g.add_node('A3')
     B  = g.add_node('B')
     C1 = g.add_node('C1')
