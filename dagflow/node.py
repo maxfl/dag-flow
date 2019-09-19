@@ -6,7 +6,12 @@ def NodeFunction(fcn):
     class NewNodeClass(Node):
         _fcn = fcn
         def __init__(self, *args, **kwargs):
+            if 'fcn' in kwargs:
+                raise Exception('May not define function for NodeFunction')
+
             Node.__init__(self, *args, **kwargs)
+
+    return NewNodeClass
 
 class Node(legs.Legs):
     _name           = tools.undefinedname
@@ -54,7 +59,7 @@ class Node(legs.Legs):
             return tuple(self._add_input(n) for n in name)
 
         if name in self.inputs:
-            raise Exception('Input {node}.{input} already exist', node=self.name, input=name)
+            raise Exception('Input {node}.{input} already exist'.format(node=self.name, input=name))
         input = Input.Input(name, self, corresponding_output)
         self.inputs += input
 

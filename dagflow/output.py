@@ -50,6 +50,11 @@ class Output(object):
         self._node.touch()
         return self._data
 
+    def set_data(self, data):
+        self._data = data
+        self._datatype = type(data)
+        return data
+
     def datatype(self):
         return self._datatype
 

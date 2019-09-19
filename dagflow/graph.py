@@ -12,7 +12,8 @@ class Graph(object):
         self._outputs = []
 
     def add_node(self, name, **kwargs):
-        newnode = Node(name, graph=self, **kwargs)
+        NodeClass = kwargs.pop('nodeclass', Node)
+        newnode = NodeClass(name, graph=self, **kwargs)
         self._nodes.append(newnode)
         return newnode
 

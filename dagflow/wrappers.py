@@ -1,12 +1,20 @@
 from __future__ import print_function
+from dagflow.printl import printl, next_level, current_level
 
 def printer(fcn, inputs, outputs, node):
-    print('Evaluate {node}'.format(node=node.name()))
+    printl('Evaluate {node}'.format(node=node.name()))
+    with next_level():
+        fcn(inputs, outputs, node)
+    printl('... done with {node}'.format(node=node.name()))
+
+def dataprinter(fcn, inputs, outputs, node):
     fcn(inputs, outputs, node)
-    print('    ... done with {node}'.format(node=node.name()))
+    for i, output in enumerate(outputs):
+        printl('{: 2d} {}: {!s}'.format(i, output.name(), output._data))
 
 def toucher(fcn, inputs, outputs, node):
     for i, input in enumerate(inputs):
-        print('    touch input {: 2d} {}.{}'.format(i, node.name(), input.name()))
-        input.touch()
+        printl('touch input {: 2d} {}.{}'.format(i, node.name(), input.name()))
+        with next_level():
+            input.touch()
     fcn(inputs, outputs, node)

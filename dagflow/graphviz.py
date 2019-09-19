@@ -3,12 +3,18 @@ from collections import OrderedDict
 
 from dagflow.input import Input
 from dagflow.output import Output
+from dagflow.printl import printl
 
 try:
     import pygraphviz as G
 except ImportError:
     GraphDot = None
+    savegraph = None
 else:
+    def savegraph(graph, *args, **kwargs):
+        gd = GraphDot(graph, **kwargs)
+        gd.savegraph(*args)
+
     class GraphDot(object):
         _graph = None
         def __init__(self, dag, **kwargs):
@@ -155,7 +161,7 @@ else:
 
         def savegraph(self, fname, verbose=True):
             if verbose:
-                print('Write output file:', fname)
+                printl('Write output file:', fname)
 
             if fname.endswith('.dot'):
                 self._graph.write(fname)
