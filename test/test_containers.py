@@ -1,9 +1,9 @@
 #!/usr/bin/env python
 
 from __future__ import print_function
-from legs import Legs
-from input import Input, Inputs
-from output import Output, Outputs
+from dagflow.legs import Legs
+from dagflow.input import Input, Inputs
+from dagflow.output import Output, Outputs
 
 def test_01():
     inputs = Inputs()

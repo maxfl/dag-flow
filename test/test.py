@@ -1,11 +1,11 @@
 #!/usr/bin/env python
 
 from __future__ import print_function
-from input import Input
-from output import Output
-from node import Node
-from graph import Graph
-from wrappers import *
+from dagflow.input import Input
+from dagflow.output import Output
+from dagflow.node import Node
+from dagflow.graph import Graph
+from dagflow.wrappers import *
 
 def test_01():
     i = Input('input', None)

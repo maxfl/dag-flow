@@ -1,12 +1,12 @@
 from __future__ import print_function
-import input, output, shift
+from dagflow import input as Input, output as Output, shift
 
 class Legs(object):
     def __init__(self, inputs=None, outputs=None):
         object.__init__(self)
 
-        self.inputs = input.Inputs(inputs)
-        self.outputs = output.Outputs(outputs)
+        self.inputs = Input.Inputs(inputs)
+        self.outputs = Output.Outputs(outputs)
 
     def __getitem__(self, key):
         if len(key)!=2:

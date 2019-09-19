@@ -1,5 +1,5 @@
 from __future__ import print_function
-from node import Node
+from dagflow.node import Node
 
 class Graph(object):
     _nodes  = None

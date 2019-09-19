@@ -1,1 +1,2 @@
-set -x PYTHONPATH (pwd)/dagflow/
+set -x --prepend PYTHONPATH (pwd)/
+gitprompt

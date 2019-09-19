@@ -1,7 +1,6 @@
 from __future__ import print_function
-import legs, input as Input, output as Output
-import tools
-from tools import IsIterable
+from dagflow import legs, input as Input, output as Output, tools
+from dagflow.tools import IsIterable
 
 class Node(legs.Legs):
     _name = tools.undefinedname
@@ -12,6 +11,7 @@ class Node(legs.Legs):
     _frozen_tainted  = False
     _auto_freeze = False
     _evaluating = False
+    _immediate  = False
     _fcn     = None
     _fcn_chain = None
 
@@ -22,6 +22,12 @@ class Node(legs.Legs):
         self._fcn_chain = []
         self._graph = kwargs.pop('graph', tools.undefinedgraph)
         self._label = kwargs.pop('label', tools.undefinedname)
+
+        for opt in ('immediate', 'auto_freeze', 'frozen'):
+            value = kwargs.pop(opt, None)
+            if value is None:
+                continue
+            setattr(self, '_'+opt, bool(value))
 
     def name(self):
         return self._name
@@ -35,7 +41,7 @@ class Node(legs.Legs):
 
     def _add_input(self, name, corresponding_output=tools.undefinedoutput):
         if IsIterable(name):
-            return tuple(self._add_output(n) for n in name)
+            return tuple(self._add_input(n) for n in name)
 
         if name in self.inputs:
             raise Exception('Input {node}.{input} already exist', node=self.name, input=name)
@@ -132,6 +138,9 @@ class Node(legs.Legs):
     def frozen(self):
         return self._frozen
 
+    def immediate(self):
+        return self._immediate
+
     def frozen_tainted(self):
         return self._frozen_tainted
 
@@ -144,6 +153,9 @@ class Node(legs.Legs):
             return
 
         self._tainted = True
+
+        if self._immediate:
+            self.touch()
 
         for output in self.outputs:
             output.taint()

@@ -1,8 +1,8 @@
 from __future__ import print_function
 from collections import OrderedDict
 
-from input import Input
-from output import Output
+from dagflow.input import Input
+from dagflow.output import Output
 
 try:
     import pygraphviz as G
@@ -117,8 +117,10 @@ else:
                 attr['color'] = 'blue'
             elif node.frozen():
                 attr['color'] = 'cyan'
-            else:
+            elif node.immediate():
                 attr['color'] = 'green'
+            else:
+                attr['color'] = 'forestgreen'
 
         def _set_style_edge(self, obj, attrin, attr, attrout):
             if isinstance(obj, Input):

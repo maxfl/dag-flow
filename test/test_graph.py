@@ -1,8 +1,8 @@
 #!/usr/bin/env python
 
-from graph import Graph
-from graphviz import GraphDot
-from wrappers import *
+from dagflow.graph import Graph
+from dagflow.graphviz import GraphDot
+from dagflow.wrappers import *
 
 def test_01():
     g = Graph()
@@ -68,8 +68,8 @@ def test_03():
         plot('[done evaluating {}]'.format(node.name()))
 
     A1 = g.add_node('A1')
-    A2 = g.add_node('A2', label='{name}|frozen node')
-    A3 = g.add_node('A3')
+    A2 = g.add_node('A2', auto_freeze=True, label='{name}|frozen node')
+    A3 = g.add_node('A3', immediate=True, label='{name}|immediate node')
     B  = g.add_node('B')
     C1 = g.add_node('C1')
     C2 = g.add_node('C2')
@@ -77,18 +77,15 @@ def test_03():
     E  = g.add_node('E')
     F  = g.add_node('F')
     H  = g.add_node('H')
-
-    A2.set_auto_freeze()
+    P  = g.add_node('P', immediate=True, label='{name}|immediate node')
 
     g._wrap_fcns(toucher, printer, plotter)
 
     A1._add_output('o1')
     A2._add_output('o1')
-    A3._add_output('o1')
-    B._add_pair('i1', 'o1')
-    B._add_pair('i2', 'o2')
-    B._add_input('i3')
-    B._add_input('i4')
+    P._add_output('o1')
+    A3._add_pair('i1', 'o1')
+    B._add_pair(('i1', 'i2', 'i3', 'i4'), ('o1', 'o2'))
     C1._add_output('o1')
     C2._add_output('o1')
     D._add_pair('i1', 'o1')
@@ -97,7 +94,7 @@ def test_03():
     _, other = F._add_pair('i1', 'o1')
     _, final = E._add_pair('i1', 'o1')
 
-    (A1, A2, A3, D[:1]) >> B >> (E, H)
+    (A1, A2, (P>>A3), D[:1]) >> B >> (E, H)
     ((C1, C2) >> D[:,1]) >> F
 
     g.print()
@@ -161,6 +158,18 @@ def test_03():
     plot()
     plot()
     A2.unfreeze()
+    plot()
+    label = 'Read E...'
+    plot()
+    final.data()
+    label = 'Done reading E.'
+    plot()
+
+    label = 'Taint P'
+    plot()
+    plot()
+    plot()
+    P.taint()
     plot()
     label = 'Read E...'
     plot()

@@ -1,7 +1,6 @@
 from __future__ import print_function
 import itertools as I
-import iterators
-import tools
+from dagflow import iterators, tools
 
 def rshift(outputs, inputs):
     corresponding_outputs = tuple(iterators.iter_corresponding_outputs(inputs))

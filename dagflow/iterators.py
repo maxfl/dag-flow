@@ -1,7 +1,7 @@
 from __future__ import print_function
 from collections import OrderedDict
-import legs, input as Input, output as Output
-from tools import IsIterable
+from dagflow import legs, input as Input, output as Output
+from dagflow.tools import IsIterable
 
 def iter_inputs(inputs):
     if isinstance(inputs, Input.Input):

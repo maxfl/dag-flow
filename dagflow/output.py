@@ -1,8 +1,8 @@
 from __future__ import print_function
-import tools
-import input as Input
-from shift import rshift, lshift
-from edges import EdgeContainer
+from dagflow import tools
+import dagflow.input as Input
+from dagflow.shift import rshift, lshift
+from dagflow.edges import EdgeContainer
 
 class Output(object):
     _name   = tools.undefinedname

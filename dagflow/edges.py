@@ -1,6 +1,6 @@
 from __future__ import print_function
 from collections import OrderedDict, Iterable
-from tools import IsIterable, nth
+from dagflow.tools import IsIterable, nth
 
 class EdgeContainer(object):
     _dict = None
