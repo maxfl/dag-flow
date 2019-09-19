@@ -2,23 +2,33 @@ from __future__ import print_function
 from dagflow import legs, input as Input, output as Output, tools
 from dagflow.tools import IsIterable
 
-class Node(legs.Legs):
-    _name = tools.undefinedname
-    _label = tools.undefinedname
-    _graph   = tools.undefinedgraph
-    _tainted = True
-    _frozen  = False
-    _frozen_tainted  = False
-    _auto_freeze = False
-    _evaluating = False
-    _immediate  = False
-    _fcn     = None
-    _fcn_chain = None
+def NodeFunction(fcn):
+    class NewNodeClass(Node):
+        _fcn = fcn
+        def __init__(self, *args, **kwargs):
+            Node.__init__(self, *args, **kwargs)
 
-    def __init__(self, name, fcn=lambda i, o, n: None, graph=tools.undefinedgraph, **kwargs):
+class Node(legs.Legs):
+    _name           = tools.undefinedname
+    _label          = tools.undefinedname
+    _graph          = tools.undefinedgraph
+    _fcn            = tools.undefinedfunction
+    _fcn_chain      = None
+    _tainted        = True
+    _frozen         = False
+    _frozen_tainted = False
+    _auto_freeze    = False
+    _evaluating     = False
+    _immediate      = False
+
+    def __init__(self, name, **kwargs):
         legs.Legs.__init__(self)
         self._name = name
-        self._fcn = kwargs.pop('fcn', lambda i, o, n: None)
+
+        newfcn = kwargs.pop('fcn', None)
+        if newfcn:
+            self._fcn = newfcn
+
         self._fcn_chain = []
         self._graph = kwargs.pop('graph', tools.undefinedgraph)
         self._label = kwargs.pop('label', tools.undefinedname)

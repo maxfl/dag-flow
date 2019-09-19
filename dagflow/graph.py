@@ -11,8 +11,8 @@ class Graph(object):
         self._inputs  = []
         self._outputs = []
 
-    def add_node(self, name, fcn=lambda i, o, n: None, **kwargs):
-        newnode = Node(name, fcn, self, **kwargs)
+    def add_node(self, name, **kwargs):
+        newnode = Node(name, graph=self, **kwargs)
         self._nodes.append(newnode)
         return newnode
 

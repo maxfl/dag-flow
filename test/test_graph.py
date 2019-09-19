@@ -68,8 +68,8 @@ def test_03():
         plot('[done evaluating {}]'.format(node.name()))
 
     A1 = g.add_node('A1')
-    A2 = g.add_node('A2', auto_freeze=True, label='{name}|frozen node')
-    A3 = g.add_node('A3', immediate=True, label='{name}|immediate node')
+    A2 = g.add_node('A2', auto_freeze=True, label='{name}|frozen')
+    A3 = g.add_node('A3', immediate=True, label='{name}|immediate')
     B  = g.add_node('B')
     C1 = g.add_node('C1')
     C2 = g.add_node('C2')
@@ -77,7 +77,7 @@ def test_03():
     E  = g.add_node('E')
     F  = g.add_node('F')
     H  = g.add_node('H')
-    P  = g.add_node('P', immediate=True, label='{name}|immediate node')
+    P  = g.add_node('P', immediate=True, label='{name}|immediate')
 
     g._wrap_fcns(toucher, printer, plotter)
 

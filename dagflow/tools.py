@@ -22,6 +22,9 @@ class Undefined(object):
     def __bool__(self):
         return False
 
+    def __call__(self, *args, **kwargs):
+        pass
+
 undefinedname = Undefined('name')
 undefineddata = Undefined('data')
 undefineddatatype = Undefined('datatype')
@@ -29,4 +32,5 @@ undefinednode = Undefined('node')
 undefinedgraph = Undefined('graph')
 undefinedoutput = Undefined('output')
 undefinedleg = Undefined('leg')
+undefinedfunction = Undefined('function')
 
