@@ -1,6 +1,11 @@
 #!/usr/bin/env python
 
-from dagflow import *
+from __future__ import print_function
+from input import Input
+from output import Output
+from node import Node
+from graph import Graph
+from wrappers import *
 
 def test_01():
     i = Input('input', None)

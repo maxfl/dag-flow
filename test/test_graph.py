@@ -1,6 +1,8 @@
 #!/usr/bin/env python
 
-from dagflow import *
+from graph import Graph
+from graphviz import GraphDot
+from wrappers import *
 
 def test_01():
     g = Graph()
