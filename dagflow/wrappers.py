@@ -1,5 +1,5 @@
 from __future__ import print_function
-from dagflow.printl import printl, next_level, current_level
+from dagflow.printl import printl, next_level
 
 def printer(fcn, inputs, outputs, node):
     printl('Evaluate {node}'.format(node=node.name()))

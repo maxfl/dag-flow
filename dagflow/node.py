@@ -2,16 +2,23 @@ from __future__ import print_function
 from dagflow import legs, input as Input, output as Output, tools
 from dagflow.tools import IsIterable
 
-def NodeFunction(fcn):
-    class NewNodeClass(Node):
-        _fcn = fcn
-        def __init__(self, *args, **kwargs):
-            if 'fcn' in kwargs:
-                raise Exception('May not define function for NodeFunction')
+def NodeFunction(fcn=None, **kwargsdeco):
+    if fcn:
+        class NewNodeClass(Node):
+            _fcn = fcn
+            def __init__(self, *args, **kwargsclass):
+                kwargs = dict(kwargsclass, **kwargsdeco)
+                if 'fcn' in kwargs:
+                    raise Exception('May not define function for NodeFunction')
 
-            Node.__init__(self, *args, **kwargs)
+                Node.__init__(self, *args, **kwargs)
 
-    return NewNodeClass
+        return NewNodeClass
+
+    def readfunction(fcn1):
+        return NodeFunction(fcn1, **kwargsdeco)
+
+    return readfunction
 
 class Node(legs.Legs):
     _name           = tools.undefinedname
@@ -44,6 +51,17 @@ class Node(legs.Legs):
                 continue
             setattr(self, '_'+opt, bool(value))
 
+        input = kwargs.pop('input', None)
+        if input:
+            self._add_input(input)
+
+        output = kwargs.pop('output', None)
+        if output:
+            self._add_output(output)
+
+        if kwargs:
+            raise Exception('Unparsed arguments')
+
     def name(self):
         return self._name
 
@@ -73,7 +91,7 @@ class Node(legs.Legs):
             return tuple(self._add_output(n) for n in name)
 
         if name in self.outputs:
-            raise Exception('Output {node}.{output} already exist', node=self.name, output=name)
+            raise Exception('Output {node}.{output} already exist'.format(node=self.name(), output=name))
 
         output = Output.Output(name, self)
         self.outputs += output

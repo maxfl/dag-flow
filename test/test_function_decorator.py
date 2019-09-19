@@ -6,37 +6,26 @@ from dagflow.graph import Graph
 from dagflow.graphviz import savegraph
 import numpy as N
 from dagflow.wrappers import *
-from dagflow.printl import printl, set_prefix_function
 
+from dagflow.printl import printl, set_prefix_function, current_level
 set_prefix_function(lambda: '{:<2d} '.format(current_level()),)
 
 def test_00():
-    @NodeFunction
+    @NodeFunction(output='array')
     def Array(self, inputs, outputs, node):
-        if len(outputs):
-            out = outputs[0]
-        else:
-            out = node._add_output('array')
+        outputs[0].set_data(N.arange(5, dtype='d'))
 
-        out.set_data(N.arange(5, dtype='d'))
-
-    @NodeFunction
+    @NodeFunction(output='result')
     def Adder(self, inputs, outputs, node):
-        if not len(outputs):
-            node._add_output('result')
-
         out = None
         for input in inputs:
             if out is None:
-                out = outputs[0].set_data(input.data())
+                out=outputs[0].set_data(input.data())
             else:
                 out+=input.data()
 
-    @NodeFunction
+    @NodeFunction(output='result')
     def Multiplier(self, inputs, outputs, node):
-        if not len(outputs):
-            node._add_output('result')
-
         out = None
         for input in inputs:
             if out is None:
@@ -52,14 +41,8 @@ def test_00():
     s = graph.add_node('add', nodeclass=Adder)
     m = graph.add_node('mul', nodeclass=Multiplier)
 
-    in1._add_output('array')
-    in2._add_output('array')
-    in3._add_output('array')
-    in4._add_output('array')
     s._add_input(('i1', 'i2', 'i3'))
-    s._add_output('result')
     m._add_input(('i1', 'i2'))
-    m._add_output('result')
 
     (in1, in2, in3) >> s
     (in4, s) >> m

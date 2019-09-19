@@ -4,6 +4,9 @@ from dagflow.graph import Graph
 from dagflow.graphviz import GraphDot
 from dagflow.wrappers import *
 
+from dagflow.printl import printl, set_prefix_function, current_level
+set_prefix_function(lambda: '{:<2d} '.format(current_level()),)
+
 def test_01():
     g = Graph()
     n1 = g.add_node('node1')
