@@ -1,17 +1,17 @@
 from __future__ import print_function
 from collections import OrderedDict
-import dagflow
+import legs, input as Input, output as Output
 from tools import IsIterable
 
 def iter_inputs(inputs):
-    if isinstance(inputs, dagflow.Input):
+    if isinstance(inputs, Input.Input):
         yield inputs
     else:
         if isinstance(inputs, OrderedDict):
             iterable = inputs.values()
         elif IsIterable(inputs):
             iterable = inputs
-        elif isinstance(inputs, dagflow.Legs):
+        elif isinstance(inputs, legs.Legs):
             iterable = inputs._iter_inputs()
         else:
             raise Exception('Do not know how to iterate inputs')
@@ -21,14 +21,14 @@ def iter_inputs(inputs):
                 yield input1
 
 def iter_outputs(outputs):
-    if isinstance(outputs, dagflow.Output):
+    if isinstance(outputs, Output.Output):
         yield outputs
     else:
         if isinstance(outputs, OrderedDict):
             iterable = outputs.values()
         elif IsIterable(outputs):
             iterable = outputs
-        elif isinstance(outputs, dagflow.Legs):
+        elif isinstance(outputs, legs.Legs):
             iterable = outputs._iter_outputs()
         else:
             raise Exception('Do not know how to iterate outputs')
@@ -38,16 +38,16 @@ def iter_outputs(outputs):
                 yield output1
 
 def iter_corresponding_outputs(inputs):
-    if isinstance(inputs, dagflow.Input):
+    if isinstance(inputs, Input.Input):
         yield inputs.corresponding_output()
-    elif isinstance(inputs, dagflow.Output):
+    elif isinstance(inputs, Output.Output):
         yield inputs
     else:
         if isinstance(inputs, OrderedDict):
             iterable = inputs.values()
         elif IsIterable(inputs):
             iterable = inputs
-        elif isinstance(inputs, dagflow.Legs):
+        elif isinstance(inputs, legs.Legs):
             yield inputs
             return
         else:
