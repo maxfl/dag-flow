@@ -1,5 +1,5 @@
 from __future__ import print_function
-from dagflow import legs, input as Input, output as Output, tools
+from dagflow import legs, input as Input, output as Output, tools, input_extra
 from dagflow.tools import IsIterable
 
 def NodeFunction(fcn=None, **kwargsdeco):
@@ -32,6 +32,7 @@ class Node(legs.Legs):
     _auto_freeze    = False
     _evaluating     = False
     _immediate      = False
+    missing_input_handler = None
 
     def __init__(self, name, **kwargs):
         legs.Legs.__init__(self)
@@ -58,6 +59,9 @@ class Node(legs.Legs):
         output = kwargs.pop('output', None)
         if output:
             self._add_output(output)
+
+        missing_input_handler = kwargs.pop('missing_input_handler', None)
+        self._missing_input_handler = missing_input_handler or input_extra.MissingInputFail(self)
 
         if kwargs:
             raise Exception('Unparsed arguments')
