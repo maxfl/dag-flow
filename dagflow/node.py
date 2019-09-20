@@ -61,7 +61,16 @@ class Node(legs.Legs):
             self._add_output(output)
 
         missing_input_handler = kwargs.pop('missing_input_handler', None)
-        self._missing_input_handler = missing_input_handler or input_extra.MissingInputFail(self)
+        if missing_input_handler:
+            if isinstance(missing_input_handler, str):
+                self.missing_input_handler = getattr(input_extra, missing_input_handler)(self)
+            elif isinstance(missing_input_handler, type):
+                self.missing_input_handler = missing_input_handler(self)
+            else:
+                self.missing_input_handler = missing_input_handler
+                self.missing_input_handler.node = self
+        else:
+            self.missing_input_handler = input_extra.MissingInputFail(self)
 
         if kwargs:
             raise Exception('Unparsed arguments')
@@ -201,7 +210,9 @@ class Node(legs.Legs):
         if isinstance(key, (int, slice, str)):
             return self.outputs[key]
 
-        return legs.Legs.__getitem__(self, key)
+        ret = legs.Legs.__getitem__(self, key)
+        ret.missing_input_handler = self.missing_input_handler
+        return ret
 
     def print(self):
         print('Node {}: ->[{}],[{}]->'.format(self._name, len(self.inputs), len(self.outputs)))

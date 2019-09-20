@@ -7,7 +7,10 @@ def IsIterable(obj):
 
 def nth(iterable, n):
     "Returns the nth item or a default value"
-    return next(I.islice(iterable, n, None))
+    if n>-1:
+        return next(I.islice(iterable, n, None))
+    else:
+        return tuple(iterable)[n]
 
 class Undefined(object):
     def __init__(self, what):

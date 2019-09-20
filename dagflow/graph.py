@@ -17,8 +17,8 @@ class Graph(object):
         self._nodes.append(newnode)
         return newnode
 
-    def add_nodes(self, pairs):
-        return (self.add_node(name, fcn) for name, fcn in pairs)
+    def add_nodes(self, pairs, **kwargs):
+        return (self.add_node(name, fcn, **kwargs) for name, fcn in pairs)
 
     def _add_input(self, input):
         self._inputs.append(input)

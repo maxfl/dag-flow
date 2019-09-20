@@ -5,7 +5,7 @@ from __future__ import print_function
 printlevel = 0
 singlemargin = '    '
 marginflag = False
-prefix_function = ''
+prefix_function = lambda: ''
 
 def set_prefix_function(f):
     global prefix_function

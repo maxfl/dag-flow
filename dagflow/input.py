@@ -23,7 +23,7 @@ class Input(object):
             raise exception('Bad output type')
 
         if self._output:
-            raise ConnectException('Output is already connected to the input')
+            raise Exception('Output is already connected to the input')
 
         self._output = output
 

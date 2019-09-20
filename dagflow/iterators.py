@@ -1,5 +1,4 @@
 from __future__ import print_function
-from collections import OrderedDict
 from dagflow import legs, input as Input, output as Output
 from dagflow.tools import IsIterable
 
@@ -7,7 +6,7 @@ def iter_inputs(inputs):
     if isinstance(inputs, Input.Input):
         yield inputs
     else:
-        if isinstance(inputs, OrderedDict):
+        if isinstance(inputs, dict):
             iterable = inputs.values()
         elif IsIterable(inputs):
             iterable = inputs
@@ -24,7 +23,7 @@ def iter_outputs(outputs):
     if isinstance(outputs, Output.Output):
         yield outputs
     else:
-        if isinstance(outputs, OrderedDict):
+        if isinstance(outputs, dict):
             iterable = outputs.values()
         elif IsIterable(outputs):
             iterable = outputs
@@ -43,7 +42,7 @@ def iter_corresponding_outputs(inputs):
     elif isinstance(inputs, Output.Output):
         yield inputs
     else:
-        if isinstance(inputs, OrderedDict):
+        if isinstance(inputs, dict):
             iterable = inputs.values()
         elif IsIterable(inputs):
             iterable = inputs

@@ -25,10 +25,10 @@ class Output(object):
 
     def connect_to(self, input):
         if not isinstance(input, Input.Input):
-            raise exception('Bad input type')
+            raise Exception('Bad input type')
 
         if input in self._inputs:
-            raise ConnectException('Output is already connected to the input')
+            raise Exception('Output is already connected to the input')
 
         self._inputs.append(input)
         input.set_output(self)

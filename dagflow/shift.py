@@ -3,15 +3,17 @@ import itertools as I
 from dagflow import iterators, tools
 
 def rshift(outputs, inputs):
+    scope_id = id(locals())
+
     corresponding_outputs = tuple(iterators.iter_corresponding_outputs(inputs))
-    for output, input in I.zip_longest(iterators.iter_outputs(outputs), iterators.iter_inputs(inputs), fillvalue=tools.undefinedleg):
+    for i, (output, input) in enumerate(I.zip_longest(iterators.iter_outputs(outputs), iterators.iter_inputs(inputs), fillvalue=tools.undefinedleg)):
 
         if not output:
             raise Exception('Unable to connect mismatching lists')
 
         if not input:
-            missing_input_handler = getattr(inputs, 'missing_input_handler', lambda: None)
-            input = missing_input_handler()
+            missing_input_handler = getattr(inputs, 'missing_input_handler', lambda *args, **kwargs: None)
+            input = missing_input_handler(scope=scope_id)
 
         output.connect_to(input)
 
