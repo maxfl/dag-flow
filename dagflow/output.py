@@ -1,6 +1,5 @@
 from __future__ import print_function
 from dagflow import tools
-import dagflow.input as Input
 from dagflow.shift import rshift, lshift
 from dagflow.edges import EdgeContainer
 
@@ -23,15 +22,12 @@ class Output(object):
     def name(self):
         return self._name
 
-    def connect_to(self, input):
-        if not isinstance(input, Input.Input):
-            raise Exception('Bad input type')
-
+    def _connect_to(self, input):
         if input in self._inputs:
             raise Exception('Output is already connected to the input')
 
         self._inputs.append(input)
-        input.set_output(self)
+        input._set_output(self)
 
     __rshift__  = rshift
     __rlshift__ = lshift
@@ -58,9 +54,6 @@ class Output(object):
     def datatype(self):
         return self._datatype
 
-    def _iter_outputs(self):
-        yield self
-
     def connected(self):
         return bool(self._inputs)
 
@@ -72,6 +65,15 @@ class Output(object):
 
     def node(self):
         return self._node
+
+    def iter_outputs(self, disconnected_only=False):
+        if disconnected_only and self.connected():
+            return
+
+        raise tools.StopNesting(self)
+
+    def iter_corresponding_outputs(self):
+        raise tools.StopNesting(self)
 
 class Outputs(EdgeContainer):
     _datatype = Output

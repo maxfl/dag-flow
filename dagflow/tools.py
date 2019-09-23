@@ -2,6 +2,10 @@ from __future__ import print_function
 from collections import Iterable
 import itertools as I
 
+class StopNesting(Exception):
+    def __init__(self, object):
+        self.object = object
+
 def IsIterable(obj):
     return isinstance(obj, Iterable) and not isinstance(obj, str)
 

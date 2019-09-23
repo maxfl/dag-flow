@@ -1,6 +1,7 @@
 from __future__ import print_function
 
 class MissingInputHandler(object):
+    """Handler to implement behaviour when output is connected to the missing input with >>/<<."""
     _node = None
     def __init__(self, node=None):
         self.node = node
@@ -17,6 +18,7 @@ class MissingInputHandler(object):
         pass
 
 class MissingInputFail(MissingInputHandler):
+    """Default missing input handler: issues and exception."""
     def __init__(self, node=None):
         MissingInputHandler.__init__(self, node)
 
@@ -24,6 +26,7 @@ class MissingInputFail(MissingInputHandler):
         raise Exception('Unable to iterate inputs further. No additional inputs may be created')
 
 class MissingInputAdd(MissingInputHandler):
+    """Adds an input for each output in >> operator."""
     input_fmt = 'input_{:02d}'
     def __init__(self, node=None, fmt=None):
         MissingInputHandler.__init__(self, node)
@@ -37,6 +40,7 @@ class MissingInputAdd(MissingInputHandler):
         return self.node._add_input(self.input_fmt.format(idx), **kwargs)
 
 class MissingInputAddPair(MissingInputAdd):
+    """Adds an input for each output in >> operator. Adds an output for each new input."""
     output_fmt = 'output_{:02d}'
     def __init__(self, node=None, input_fmt=None, output_fmt=None):
         MissingInputAdd.__init__(self, node, input_fmt)
@@ -51,6 +55,7 @@ class MissingInputAddPair(MissingInputAdd):
         return MissingInputAdd.__call__(self, idx, corresponding_output=out, scope=scope)
 
 class MissingInputAddOne(MissingInputAdd):
+    """Adds an input for each output in >> operator. Adds only one output if needed."""
     output_fmt = 'output_{:02d}'
     add_corresponding_output = False
     def __init__(self, node=None, input_fmt=None, output_fmt=None, add_corresponding_output=False):
@@ -74,6 +79,7 @@ class MissingInputAddOne(MissingInputAdd):
         return MissingInputAdd.__call__(self, idx, scope=scope)
 
 class MissingInputAddEach(MissingInputAdd):
+    """Adds an input for each output in >> operator. Adds an output for each block (for each >> operation)."""
     output_fmt = 'output_{:02d}'
     add_corresponding_output = False
     scope = 0

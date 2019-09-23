@@ -1,7 +1,6 @@
 #!/usr/bin/env python
 
 from __future__ import print_function
-from dagflow.node import NodeFunction
 from dagflow.graph import Graph
 from dagflow.graphviz import savegraph
 import numpy as N

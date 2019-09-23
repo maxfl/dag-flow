@@ -13,7 +13,9 @@ def rshift_scope_id():
 def rshift(outputs, inputs):
     scope_id = rshift_scope_id()
 
-    for i, (output, input) in enumerate(I.zip_longest(iterators.iter_outputs(outputs), iterators.iter_inputs(inputs, True), fillvalue=tools.undefinedleg)):
+    for i, (output, input) in enumerate(I.zip_longest(iterators.iter_outputs(outputs),
+                                                      iterators.iter_inputs(inputs, True),
+                                                      fillvalue=tools.undefinedleg)):
         if not output:
             raise Exception('Unable to connect mismatching lists')
 
@@ -21,7 +23,7 @@ def rshift(outputs, inputs):
             missing_input_handler = getattr(inputs, 'missing_input_handler', lambda *args, **kwargs: None)
             input = missing_input_handler(scope=scope_id)
 
-        output.connect_to(input)
+        output._connect_to(input)
 
     corresponding_outputs = tuple(iterators.iter_corresponding_outputs(inputs))
 

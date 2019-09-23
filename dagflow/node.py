@@ -1,24 +1,7 @@
 from __future__ import print_function
 from dagflow import legs, input as Input, output as Output, tools, input_extra
 from dagflow.tools import IsIterable
-
-def NodeFunction(fcn=None, **kwargsdeco):
-    if fcn:
-        class NewNodeClass(Node):
-            _fcn = fcn
-            def __init__(self, *args, **kwargsclass):
-                kwargs = dict(kwargsclass, **kwargsdeco)
-                if 'fcn' in kwargs:
-                    raise Exception('May not define function for NodeFunction')
-
-                Node.__init__(self, *args, **kwargs)
-
-        return NewNodeClass
-
-    def readfunction(fcn1):
-        return NodeFunction(fcn1, **kwargsdeco)
-
-    return readfunction
+from dagflow import graph
 
 class Node(legs.Legs):
     _name           = tools.undefinedname
@@ -43,7 +26,9 @@ class Node(legs.Legs):
             self._fcn = newfcn
 
         self._fcn_chain = []
-        self._graph = kwargs.pop('graph', tools.undefinedgraph)
+        self._graph = kwargs.pop('graph', graph.Graph.current())
+        if self._graph:
+            self._graph.register_node(self)
         self._label = kwargs.pop('label', tools.undefinedname)
 
         for opt in ('immediate', 'auto_freeze', 'frozen'):

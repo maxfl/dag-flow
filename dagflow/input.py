@@ -1,6 +1,5 @@
 from __future__ import print_function
 from dagflow import tools
-import dagflow.output as Output
 from dagflow.shift import rshift, lshift
 from dagflow.edges import EdgeContainer
 
@@ -18,10 +17,7 @@ class Input(object):
     def __str__(self):
         return '->| {name}'.format(name=self._name)
 
-    def set_output(self, output):
-        if not isinstance(output, Output.Output):
-            raise exception('Bad output type')
-
+    def _set_output(self, output):
         if self._output:
             raise Exception('Output is already connected to the input')
 
@@ -60,6 +56,15 @@ class Input(object):
     def node(self):
         return self._node
 
+    def iter_inputs(self, disconnected_only=False):
+        if disconnected_only and self.connected():
+            return
+
+        raise tools.StopNesting(self)
+
+    def iter_corresponding_outputs(self):
+        raise tools.StopNesting(self)
+
     __lshift__  = lshift
     __rrshift__ = lshift
 
@@ -70,3 +75,10 @@ class Inputs(EdgeContainer):
 
     def __str__(self):
         return '->[{}]|'.format(len(self))
+
+    def iter_inputs(self, disconnected_only=False):
+        for input in self:
+            if disconnected_only and input.connected():
+                continue
+
+            yield input

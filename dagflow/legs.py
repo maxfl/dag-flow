@@ -1,12 +1,14 @@
 from __future__ import print_function
-from dagflow import input as Input, output as Output, shift
+from dagflow import shift
+from dagflow.tools import StopNesting
 
 class Legs(object):
     def __init__(self, inputs=None, outputs=None):
         object.__init__(self)
 
-        self.inputs = Input.Inputs(inputs)
-        self.outputs = Output.Outputs(outputs)
+        from dagflow import input, output
+        self.inputs = input.Inputs(inputs)
+        self.outputs = output.Outputs(outputs)
 
     def __getitem__(self, key):
         if len(key)!=2:
@@ -32,11 +34,14 @@ class Legs(object):
     def __str__(self):
         return '->[{}],[{}]->'.format(len(self.inputs), len(self.outputs))
 
-    def _iter_outputs(self):
+    def iter_outputs(self):
         return iter(self.outputs)
 
-    def _iter_inputs(self):
+    def iter_inputs(self, disconnected_only=False):
         return iter(self.inputs)
+
+    def iter_corresponding_outputs(self):
+        raise StopNesting(self)
 
     def print(self):
         for i, input in enumerate(self.inputs):
