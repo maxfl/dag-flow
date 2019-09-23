@@ -66,13 +66,13 @@ class Output(object):
     def node(self):
         return self._node
 
-    def iter_outputs(self, disconnected_only=False):
+    def _deep_iter_outputs(self, disconnected_only=False):
         if disconnected_only and self.connected():
             return iter(tuple())
 
         raise tools.StopNesting(self)
 
-    def iter_corresponding_outputs(self):
+    def _deep_iter_corresponding_outputs(self):
         raise tools.StopNesting(self)
 
 class Outputs(EdgeContainer):

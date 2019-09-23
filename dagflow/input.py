@@ -56,13 +56,13 @@ class Input(object):
     def node(self):
         return self._node
 
-    def iter_inputs(self, disconnected_only=False):
+    def _deep_iter_inputs(self, disconnected_only=False):
         if disconnected_only and self.connected():
             return iter(tuple())
 
         raise tools.StopNesting(self)
 
-    def iter_corresponding_outputs(self):
+    def _deep_iter_corresponding_outputs(self):
         if self._corresponding_output:
             raise tools.StopNesting(self._corresponding_output)
 
@@ -79,7 +79,7 @@ class Inputs(EdgeContainer):
     def __str__(self):
         return '->[{}]|'.format(len(self))
 
-    def iter_inputs(self, disconnected_only=False):
+    def _deep_iter_inputs(self, disconnected_only=False):
         for input in self:
             if disconnected_only and input.connected():
                 continue

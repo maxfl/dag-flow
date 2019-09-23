@@ -34,13 +34,13 @@ class Legs(object):
     def __str__(self):
         return '->[{}],[{}]->'.format(len(self.inputs), len(self.outputs))
 
-    def iter_outputs(self):
+    def _deep_iter_outputs(self):
         return iter(self.outputs)
 
-    def iter_inputs(self, disconnected_only=False):
+    def _deep_iter_inputs(self, disconnected_only=False):
         return iter(self.inputs)
 
-    def iter_corresponding_outputs(self):
+    def _deep_iter_corresponding_outputs(self):
         raise StopNesting(self)
 
     def print(self):
