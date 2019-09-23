@@ -58,12 +58,15 @@ class Input(object):
 
     def iter_inputs(self, disconnected_only=False):
         if disconnected_only and self.connected():
-            return
+            return iter(tuple())
 
         raise tools.StopNesting(self)
 
     def iter_corresponding_outputs(self):
-        raise tools.StopNesting(self)
+        if self._corresponding_output:
+            raise tools.StopNesting(self._corresponding_output)
+
+        return iter(tuple())
 
     __lshift__  = lshift
     __rrshift__ = lshift
@@ -82,3 +85,4 @@ class Inputs(EdgeContainer):
                 continue
 
             yield input
+

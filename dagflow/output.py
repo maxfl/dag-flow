@@ -68,7 +68,7 @@ class Output(object):
 
     def iter_outputs(self, disconnected_only=False):
         if disconnected_only and self.connected():
-            return
+            return iter(tuple())
 
         raise tools.StopNesting(self)
 
