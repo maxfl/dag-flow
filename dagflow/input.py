@@ -54,7 +54,7 @@ class Input(object):
     def connected(self):
         return self._output
 
-    def free(self):
+    def disconnected(self):
         return self._output is tools.undefinedoutput
 
     def node(self):

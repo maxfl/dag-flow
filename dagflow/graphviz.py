@@ -21,13 +21,17 @@ else:
             kwargs.setdefault('fontsize', 10)
             kwargs.setdefault('labelfontsize', 10)
             kwargs.setdefault('rankdir', 'LR')
+            label = kwargs.pop('label', None)
 
             self._nodes = OrderedDict()
             self._nodes_open_input = OrderedDict()
             self._nodes_open_output = OrderedDict()
             self._edges = OrderedDict()
 
-            self._graph=G.AGraph(directed=True, strict=False,**kwargs)
+            self._graph=G.AGraph(directed=True, strict=False, **kwargs)
+
+            if label:
+                self.set_label(label)
 
             self._transform(dag)
 

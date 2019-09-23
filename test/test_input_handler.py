@@ -23,7 +23,7 @@ def test_00():
     except:
         pass
 
-    savegraph(graph, 'output/missing_input_handler_00.pdf')
+    savegraph(graph, 'output/missing_input_handler_00.pdf', label='Fail on connect')
 
 def test_01():
     graph = Graph()
@@ -36,13 +36,13 @@ def test_01():
     s = graph.add_node('add', missing_input_handler=MissingInputAdd)
 
     (in1, in2, in3) >> s
-    in4 >> s[3:, :]
+    in4 >> s
 
     print()
     print('test 01')
     s.print()
 
-    savegraph(graph, 'output/missing_input_handler_01.pdf')
+    savegraph(graph, 'output/missing_input_handler_01.pdf', label='Add only inputs')
 
 def test_02():
     graph = Graph()
@@ -55,7 +55,7 @@ def test_02():
     s = graph.add_node('add', missing_input_handler=MissingInputAddPair)
 
     (in1, in2, in3) >> s
-    in4 >> s[3:, :]
+    in4 >> s
 
     print()
     print('test 02')
@@ -64,7 +64,7 @@ def test_02():
     for input, output in zip(s.inputs, s.outputs):
         assert input.corresponding_output() is output
 
-    savegraph(graph, 'output/missing_input_handler_02.pdf')
+    savegraph(graph, 'output/missing_input_handler_02.pdf', label='Add inputs and an output for each input')
 
 def test_03():
     graph = Graph()
@@ -77,13 +77,13 @@ def test_03():
     s = graph.add_node('add', missing_input_handler=MissingInputAddOne)
 
     (in1, in2, in3) >> s
-    in4 >> s[3:, :]
+    in4 >> s
 
     print()
     print('test 03')
     s.print()
 
-    savegraph(graph, 'output/missing_input_handler_03.pdf')
+    savegraph(graph, 'output/missing_input_handler_03.pdf', label='Add only inputs and only one output')
 
 def test_04():
     graph = Graph()
@@ -96,7 +96,7 @@ def test_04():
     s = graph.add_node('add', missing_input_handler=MissingInputAddOne(add_corresponding_output=True))
 
     (in1, in2, in3) >> s
-    in4 >> s[3:, :]
+    in4 >> s
 
     print()
     print('test 04')
@@ -106,7 +106,7 @@ def test_04():
     for input in s.inputs:
         assert input.corresponding_output() is output
 
-    savegraph(graph, 'output/missing_input_handler_04.pdf')
+    savegraph(graph, 'output/missing_input_handler_04.pdf', label='Add inputs and only one output')
 
 def test_05():
     graph = Graph()
@@ -119,13 +119,13 @@ def test_05():
     s = graph.add_node('add', missing_input_handler=MissingInputAddEach(add_corresponding_output=False))
 
     (in1, in2, in3) >> s
-    in4 >> s[3:, :]
+    in4 >> s
 
     print()
     print('test 05')
     s.print()
 
-    savegraph(graph, 'output/missing_input_handler_05.pdf')
+    savegraph(graph, 'output/missing_input_handler_05.pdf', label='Add inputs and an output for each block')
 
 def test_06():
     graph = Graph()
@@ -138,7 +138,7 @@ def test_06():
     s = graph.add_node('add', missing_input_handler=MissingInputAddEach(add_corresponding_output=True))
 
     (in1, in2, in3) >> s
-    in4 >> s[3:, :]
+    in4 >> s
 
     print()
     print('test 06')
@@ -150,7 +150,7 @@ def test_06():
     for input in s.inputs[3:]:
         assert input.corresponding_output() is o2
 
-    savegraph(graph, 'output/missing_input_handler_06.pdf')
+    savegraph(graph, 'output/missing_input_handler_06.pdf', label='Add inputs and an output for each block')
 
 if __name__ == "__main__":
     test_00()

@@ -64,7 +64,7 @@ class Output(object):
     def connected(self):
         return bool(self._inputs)
 
-    def free(self):
+    def disconnected(self):
         return not bool(self._inputs)
 
     def inputs(self):

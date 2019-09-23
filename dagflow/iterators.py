@@ -2,9 +2,10 @@ from __future__ import print_function
 from dagflow import legs, input as Input, output as Output
 from dagflow.tools import IsIterable
 
-def iter_inputs(inputs):
+def iter_inputs(inputs, disconnected_only=False):
     if isinstance(inputs, Input.Input):
-        yield inputs
+        if not disconnected_only or inputs.disconnected():
+            yield inputs
     else:
         if isinstance(inputs, dict):
             iterable = inputs.values()
@@ -16,12 +17,13 @@ def iter_inputs(inputs):
             raise Exception('Do not know how to iterate inputs')
 
         for input in iterable:
-            for input1 in iter_inputs(input):
+            for input1 in iter_inputs(input, disconnected_only):
                 yield input1
 
-def iter_outputs(outputs):
+def iter_outputs(outputs, disconnected_only=False):
     if isinstance(outputs, Output.Output):
-        yield outputs
+        if not disconnected_only or outputs.disconnected():
+            yield outputs
     else:
         if isinstance(outputs, dict):
             iterable = outputs.values()
@@ -33,7 +35,7 @@ def iter_outputs(outputs):
             raise Exception('Do not know how to iterate outputs')
 
         for output in iterable:
-            for output1 in iter_outputs(output):
+            for output1 in iter_outputs(output, disconnected_only):
                 yield output1
 
 def iter_corresponding_outputs(inputs):
