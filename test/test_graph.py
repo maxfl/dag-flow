@@ -50,7 +50,7 @@ def test_02():
     d = GraphDot(g)
     d.savegraph('output/test2/test_00.png')
 
-    final.data()
+    final.data
     d.savegraph('output/test2/test_01.png')
 
 counter = 0
@@ -67,9 +67,9 @@ def test_03():
         counter+=1
 
     def plotter(fcn, inputs, outputs, node):
-        plot('[start evaluating {}]'.format(node.name()))
+        plot('[start evaluating {}]'.format(node.name))
         fcn(inputs, outputs, node)
-        plot('[done evaluating {}]'.format(node.name()))
+        plot('[done evaluating {}]'.format(node.name))
 
     A1 = g.add_node('A1')
     A2 = g.add_node('A2', auto_freeze=True, label='{name}|frozen')
@@ -110,7 +110,7 @@ def test_03():
     plot()
     plot()
     plot()
-    final.data()
+    final.data
     label = 'Done reading E.'
     plot()
 
@@ -121,7 +121,7 @@ def test_03():
     D.taint()
     plot()
     label = 'Read F...'
-    other.data()
+    other.data
     label = 'Done reading F.'
     plot()
 
@@ -129,7 +129,7 @@ def test_03():
     plot()
     plot()
     plot()
-    final.data()
+    final.data
     label = 'Done reading E.'
     plot()
 
@@ -141,7 +141,7 @@ def test_03():
     plot()
     label = 'Read E...'
     plot()
-    final.data()
+    final.data
     label = 'Done reading E.'
     plot()
 
@@ -153,7 +153,7 @@ def test_03():
     plot()
     label = 'Read E...'
     plot()
-    final.data()
+    final.data
     label = 'Done reading E.'
     plot()
 
@@ -165,7 +165,7 @@ def test_03():
     plot()
     label = 'Read E...'
     plot()
-    final.data()
+    final.data
     label = 'Done reading E.'
     plot()
 
@@ -177,7 +177,7 @@ def test_03():
     plot()
     label = 'Read E...'
     plot()
-    final.data()
+    final.data
     label = 'Done reading E.'
     plot()
 

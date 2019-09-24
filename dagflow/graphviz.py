@@ -51,7 +51,7 @@ else:
         def _add_node(self, nodedag):
             styledict = dict(shape='Mrecord')
 
-            label=nodedag.label() or nodedag.name()
+            label=nodedag.label() or nodedag.name
             target=self.get_id(nodedag)
             self._graph.add_node(target, label=label, **styledict)
             nodedot = self._graph.get_node(target)
@@ -83,7 +83,7 @@ else:
         def _add_edges(self, nodedag):
             for output in nodedag.outputs:
                 if output.connected():
-                    for input in output.inputs():
+                    for input in output.inputs:
                         self._add_edge(nodedag, output, input)
                 else:
                     self._add_open_output(nodedag, output)
@@ -107,7 +107,7 @@ else:
             styledict = dict()
 
             source = self.get_id(nodedag)
-            target = self.get_id(input.node())
+            target = self.get_id(input.node)
             self._graph.add_edge(source, target, **styledict)
 
             nodein  = self._graph.get_node(source)
@@ -119,15 +119,15 @@ else:
         def _set_style_node(self, node, attr):
             if not node:
                 attr['color'] = 'gray'
-            elif node.evaluating():
+            elif node.evaluating:
                 attr['color'] = 'gold'
-            elif node.tainted():
+            elif node.tainted:
                 attr['color'] = 'red'
-            elif node.frozen_tainted():
+            elif node.frozen_tainted:
                 attr['color'] = 'blue'
-            elif node.frozen():
+            elif node.frozen:
                 attr['color'] = 'cyan'
-            elif node.immediate():
+            elif node.immediate:
                 attr['color'] = 'green'
             else:
                 attr['color'] = 'forestgreen'
@@ -135,18 +135,18 @@ else:
         def _set_style_edge(self, obj, attrin, attr, attrout):
             if isinstance(obj, Input):
                 if obj.connected():
-                    node = obj.output().node()
+                    node = obj.output.node
                 else:
                     node = None
                     self._set_style_node(node, attrin)
             else:
-                node = obj.node()
+                node = obj.node
                 self._set_style_node(node, attrout)
 
             self._set_style_node(node, attr)
 
             if node:
-                if node.frozen():
+                if node.frozen:
                     attrin['style']='dashed'
                     attr['style']='dashed'
                     # attr['arrowhead']='tee'

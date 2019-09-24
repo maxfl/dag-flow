@@ -27,35 +27,47 @@ class Input(object):
     def name(self):
         return self._name
 
-    def tainted(self):
-        return self._output.tainted()
+    @name.setter
+    def name(self, name):
+        self._name = name
 
+    @property
+    def node(self):
+        return self._node
+
+    @property
+    def output(self):
+        return self._output
+
+    @property
+    def corresponding_output(self):
+        return self._corresponding_output
+
+    @property
     def data(self):
-        return self._output.data()
+        if not self._output:
+            raise Exception('May not read data from disconnected input')
+        return self._output.data
+
+    @property
+    def datatype(self):
+        return self._output.datatype
+
+    @property
+    def tainted(self):
+        return self._output.tainted
 
     def touch(self):
         return self._output.touch()
 
-    def datatype(self):
-        return self._output.datatype()
-
-    def corresponding_output(self):
-        return self._corresponding_output
-
     def taint(self):
         self._node.taint()
 
-    def output(self):
-        return self._output
-
     def connected(self):
-        return self._output
+        return bool(self._output)
 
     def disconnected(self):
-        return self._output is tools.undefinedoutput
-
-    def node(self):
-        return self._node
+        return not bool(self._output)
 
     def _deep_iter_inputs(self, disconnected_only=False):
         if disconnected_only and self.connected():

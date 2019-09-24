@@ -19,8 +19,40 @@ class Output(object):
     def __str__(self):
         return '|-> {name}'.format(name=self._name)
 
+    @property
     def name(self):
         return self._name
+
+    @name.setter
+    def name(self, name):
+        self._name = name
+
+    @property
+    def node(self):
+        return self._node
+
+    @property
+    def inputs(self):
+        return self._inputs
+
+    @property
+    def data(self):
+        self._node.touch()
+        return self._data
+
+    @data.setter
+    def data(self, data):
+        self._data = data
+        self._datatype = type(data)
+        return data
+
+    @property
+    def datatype(self):
+        return self._datatype
+
+    @property
+    def tainted(self):
+        return self._node.tainted
 
     def _connect_to(self, input):
         if input in self._inputs:
@@ -32,9 +64,6 @@ class Output(object):
     __rshift__  = rshift
     __rlshift__ = lshift
 
-    def tainted(self):
-        return self._node.tainted()
-
     def taint(self):
         for input in self._inputs:
             input.taint()
@@ -42,29 +71,11 @@ class Output(object):
     def touch(self):
         return self._node.touch()
 
-    def data(self):
-        self._node.touch()
-        return self._data
-
-    def set_data(self, data):
-        self._data = data
-        self._datatype = type(data)
-        return data
-
-    def datatype(self):
-        return self._datatype
-
     def connected(self):
         return bool(self._inputs)
 
     def disconnected(self):
         return not bool(self._inputs)
-
-    def inputs(self):
-        return self._inputs
-
-    def node(self):
-        return self._node
 
     def _deep_iter_outputs(self, disconnected_only=False):
         if disconnected_only and self.connected():

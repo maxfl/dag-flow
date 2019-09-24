@@ -61,7 +61,7 @@ def test_02():
     s.print()
 
     for input, output in zip(s.inputs, s.outputs):
-        assert input.corresponding_output() is output
+        assert input.corresponding_output is output
 
     savegraph(graph, 'output/missing_input_handler_02.pdf', label='Add inputs and an output for each input')
 
@@ -103,7 +103,7 @@ def test_04():
 
     output = s.outputs[0]
     for input in s.inputs:
-        assert input.corresponding_output() is output
+        assert input.corresponding_output is output
 
     savegraph(graph, 'output/missing_input_handler_04.pdf', label='Add inputs and only one output')
 
@@ -145,9 +145,9 @@ def test_06():
 
     o1, o2 = s.outputs
     for input in s.inputs[:3]:
-        assert input.corresponding_output() is o1
+        assert input.corresponding_output is o1
     for input in s.inputs[3:]:
-        assert input.corresponding_output() is o2
+        assert input.corresponding_output is o2
 
     savegraph(graph, 'output/missing_input_handler_06.pdf', label='Add inputs and an output for each block')
 

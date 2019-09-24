@@ -15,10 +15,9 @@ class Node(legs.Legs):
     _auto_freeze    = False
     _evaluating     = False
     _immediate      = False
-    missing_input_handler = None
 
     def __init__(self, name, **kwargs):
-        legs.Legs.__init__(self)
+        legs.Legs.__init__(self, missing_input_handler=kwargs.pop('missing_input_handler', None))
         self._name = name
 
         newfcn = kwargs.pop('fcn', None)
@@ -45,23 +44,44 @@ class Node(legs.Legs):
         if output:
             self._add_output(output)
 
-        missing_input_handler = kwargs.pop('missing_input_handler', None)
-        if missing_input_handler:
-            if isinstance(missing_input_handler, str):
-                self.missing_input_handler = getattr(input_extra, missing_input_handler)(self)
-            elif isinstance(missing_input_handler, type):
-                self.missing_input_handler = missing_input_handler(self)
-            else:
-                self.missing_input_handler = missing_input_handler
-                self.missing_input_handler.node = self
-        else:
-            self.missing_input_handler = input_extra.MissingInputFail(self)
-
         if kwargs:
             raise Exception('Unparsed arguments')
 
+    @property
     def name(self):
         return self._name
+
+    @name.setter
+    def name(self, name):
+        self._name = name
+
+    @property
+    def tainted(self):
+        return self._tainted
+
+    @property
+    def frozen_tainted(self):
+        return self._frozen_tainted
+
+    @property
+    def frozen(self):
+        return self._frozen
+
+    @property
+    def auto_freeze(self):
+        return self._auto_freeze
+
+    @auto_freeze.setter
+    def auto_freeze(self, auto_freeze):
+        self._auto_freeze = auto_freeze
+
+    @property
+    def evaluating(self):
+        return self._evaluating
+
+    @property
+    def immediate(self):
+        return self._immediate
 
     def label(self, *args, **kwargs):
         if self._label:
@@ -89,7 +109,7 @@ class Node(legs.Legs):
             return tuple(self._add_output(n) for n in name)
 
         if name in self.outputs:
-            raise Exception('Output {node}.{output} already exist'.format(node=self.name(), output=name))
+            raise Exception('Output {node}.{output} already exist'.format(node=self.name, output=name))
 
         output = Output.Output(name, self)
         self.outputs += output
@@ -137,12 +157,6 @@ class Node(legs.Legs):
         self._fcn(self.inputs, self.outputs, self)
         self._evaluating = False
 
-    def tainted(self):
-        return self._tainted
-
-    def set_auto_freeze(self):
-        self._auto_freeze = True
-
     def freeze(self):
         if self._frozen:
             return
@@ -163,18 +177,6 @@ class Node(legs.Legs):
             self._frozen_tainted = False
             self.taint(force=True)
 
-    def evaluating(self):
-        return self._evaluating
-
-    def frozen(self):
-        return self._frozen
-
-    def immediate(self):
-        return self._immediate
-
-    def frozen_tainted(self):
-        return self._frozen_tainted
-
     def taint(self, force=False):
         if self._tainted and not force:
             return
@@ -190,14 +192,6 @@ class Node(legs.Legs):
 
         for output in self.outputs:
             output.taint()
-
-    def __getitem__(self, key):
-        if isinstance(key, (int, slice, str)):
-            return self.outputs[key]
-
-        ret = legs.Legs.__getitem__(self, key)
-        ret.missing_input_handler = self.missing_input_handler
-        return ret
 
     def print(self):
         print('Node {}: ->[{}],[{}]->'.format(self._name, len(self.inputs), len(self.outputs)))

@@ -13,25 +13,25 @@ set_prefix_function(lambda: '{:<2d} '.format(current_level()),)
 
 @NodeClass(output='array')
 def Array(self, inputs, outputs, node):
-    outputs[0].set_data(N.arange(5, dtype='d'))
+    outputs[0].data = N.arange(5, dtype='d')
 
 @NodeClass(missing_input_handler=MissingInputAddOne(output_fmt='result'))
 def Adder(self, inputs, outputs, node):
     out = None
     for input in inputs:
         if out is None:
-            out=outputs[0].set_data(input.data())
+            out=outputs[0].data = input.data
         else:
-            out+=input.data()
+            out+=input.data
 
 @NodeClass(missing_input_handler=MissingInputAddOne(output_fmt='result'))
 def Multiplier(self, inputs, outputs, node):
     out = None
     for input in inputs:
         if out is None:
-            out = outputs[0].set_data(input.data())
+            out = outputs[0].data = input.data
         else:
-            out*=input.data()
+            out*=input.data
 
 def test_00():
     graph = Graph()
@@ -47,7 +47,7 @@ def test_00():
 
     graph._wrap_fcns(dataprinter, printer)
 
-    result = m.outputs.result.data()
+    result = m.outputs.result.data
     printl(result)
 
     savegraph(graph, 'output/decorators_graph_00.pdf')
@@ -62,7 +62,7 @@ def test_01():
 
     graph._wrap_fcns(dataprinter, printer)
 
-    result = m.outputs.result.data()
+    result = m.outputs.result.data
     printl(result)
 
     savegraph(graph, 'output/decorators_graph_01.pdf')
@@ -76,24 +76,24 @@ def test_02():
             out = None
             for input in inputs:
                 if out is None:
-                    out=outputs[0].set_data(input.data())
+                    out=outputs[0].data=input.data
                 else:
-                    out+=input.data()
+                    out+=input.data
 
         @NodeInstance(name='mul', class_kwargs=dict(missing_input_handler=MissingInputAddOne(output_fmt='result')))
         def m(self, inputs, outputs, node):
             out = None
             for input in inputs:
                 if out is None:
-                    out = outputs[0].set_data(input.data())
+                    out = outputs[0].data=input.data
                 else:
-                    out*=input.data()
+                    out*=input.data
 
     (initials[3], (initials[:3] >> s)) >> m
 
     graph._wrap_fcns(dataprinter, printer)
 
-    result = m.outputs.result.data()
+    result = m.outputs.result.data
     printl(result)
 
     savegraph(graph, 'output/decorators_graph_02.pdf')

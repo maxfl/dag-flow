@@ -24,7 +24,7 @@ def rshift(outputs, inputs):
             raise Exception('Unable to connect mismatching lists')
 
         if not input:
-            missing_input_handler = getattr(inputs, 'missing_input_handler', lambda *args, **kwargs: None)
+            missing_input_handler = getattr(inputs, '_missing_input_handler', lambda *args, **kwargs: None)
             input = missing_input_handler(scope=scope_id)
 
         output._connect_to(input)

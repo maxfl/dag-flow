@@ -1,16 +1,41 @@
 from __future__ import print_function
 from dagflow import shift
 from dagflow.tools import StopNesting
+from dagflow import input_extra
 
 class Legs(object):
-    def __init__(self, inputs=None, outputs=None):
+    __missing_input_handler = None
+    def __init__(self, inputs=None, outputs=None, missing_input_handler=None):
         object.__init__(self)
+        self._missing_input_handler = missing_input_handler
 
         from dagflow import input, output
         self.inputs = input.Inputs(inputs)
         self.outputs = output.Outputs(outputs)
 
+    @property
+    def _missing_input_handler(self):
+        return self.__missing_input_handler
+
+    @_missing_input_handler.setter
+    def _missing_input_handler(self, handler):
+        if handler:
+            if isinstance(handler, str):
+                sethandler = getattr(input_extra, handler)(self)
+            elif isinstance(handler, type):
+                sethandler = handler(self)
+            else:
+                sethandler = handler
+                sethandler.node = self
+        else:
+            sethandler = input_extra.MissingInputFail(self)
+
+        self.__missing_input_handler = sethandler
+
     def __getitem__(self, key):
+        if isinstance(key, (int, slice, str)):
+            return self.outputs[key]
+
         if len(key)!=2:
             raise Exception('Legs key should be of length 2')
 
@@ -21,7 +46,7 @@ class Legs(object):
                 ikey = ikey,
             if isinstance(okey, (int, str)):
                 okey = okey,
-            return Legs(self.inputs[ikey], self.outputs[okey])
+            return Legs(self.inputs[ikey], self.outputs[okey], missing_input_handler=self.__missing_input_handler)
 
         if ikey:
             return self.inputs[ikey]

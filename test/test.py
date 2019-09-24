@@ -85,7 +85,7 @@ def test_07():
 
     (out1, out2) >> n2
 
-    final.data()
+    final.data
 
 def test_08():
     g = Graph()
@@ -106,15 +106,15 @@ def test_08():
     out3 >> n3
 
     print()
-    final.data()
+    final.data
 
     print('Taint n2')
     n2.taint()
-    final.data()
+    final.data
 
     print('Taint n3')
     n3.taint()
-    final.data()
+    final.data
 
 if __name__ == "__main__":
     test_01()

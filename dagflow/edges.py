@@ -21,7 +21,7 @@ class EdgeContainer(object):
         if self._datatype and not isinstance(value, self._datatype):
             raise Exception('The container does not support this type of data')
 
-        name = value.name()
+        name = value.name
         if not name:
             raise Exception('May not add objects with undefined name')
 
