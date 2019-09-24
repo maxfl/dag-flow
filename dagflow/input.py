@@ -99,3 +99,7 @@ class Inputs(EdgeContainer):
 
             yield input
 
+    def _touch(self):
+        for input in self:
+            input.touch()
+

@@ -9,12 +9,12 @@ import numpy as N
 
 # Node functions
 @NodeClass(output='array')
-def Array(self, node, inputs, outputs):
+def Array(node, inputs, outputs):
     """Creates a note with single data output with predefined array"""
     outputs[0].data = N.arange(5, dtype='d')
 
 @NodeClass(missing_input_handler=MissingInputAddOne(output_fmt='result'))
-def Adder(self, node, inputs, outputs):
+def Adder(node, inputs, outputs):
     """Adds all the inputs together"""
     out = None
     for input in inputs:
@@ -24,7 +24,7 @@ def Adder(self, node, inputs, outputs):
             out+=input.data
 
 @NodeClass(missing_input_handler=MissingInputAddOne(output_fmt='result'))
-def Multiplier(self, node, inputs, outputs):
+def Multiplier(node, inputs, outputs):
     """Multiplies all the inputs together"""
     out = None
     for input in inputs:

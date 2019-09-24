@@ -4,6 +4,37 @@ from dagflow.tools import IsIterable
 from dagflow import graph
 
 class Node(legs.Legs):
+    """
+    Note: _fcn should be a static function with signature (node, inputs, outputs)
+
+    - Function defined as instance property will become a static method:
+        class Node(...):
+            def __init__(self):
+                self._fcn = ...
+        node = Node()
+        node.fcn() # will have NO self provided as first argument
+
+    - Fucntion defined in a nested class with staticmethod:
+        class Other(Node
+            @staticmethod
+            def _fcn():
+                ...
+
+        node = Node()
+        node.fcn() # will have NO self provided as first argument
+
+    - [deprecated] Function defined as class property will become a bound method:
+        class Node(...):
+            _fcn = ...
+        node = Node()
+        node.fcn() # will have self provided as first argument
+
+    - [deprecated] Function defined via staticmethod decorator as class property will become a static method:
+        class Node(...):
+            _fcn = staticmethod(...)
+        node = Node()
+        node.fcn() # will have NO self provided as first argument
+    """
     _name           = tools.undefinedname
     _label          = tools.undefinedname
     _graph          = tools.undefinedgraph

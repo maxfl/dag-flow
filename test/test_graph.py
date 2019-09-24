@@ -71,7 +71,7 @@ def test_03():
 
     def plotter(fcn, node, inputs, outputs):
         plot('[start evaluating {}]'.format(node.name))
-        fcn(inputs, outputs, node)
+        fcn(node, inputs, outputs)
         plot('[done evaluating {}]'.format(node.name))
 
     A1 = g.add_node('A1')
