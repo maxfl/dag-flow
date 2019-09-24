@@ -65,6 +65,7 @@ savegraph(graph, 'output/dagflow_example.png')
 ```
 
 The code produces the following graph:
+
 ![Image](example/dagflow_example.png)
 
 For `n=[1, 2, 3, 4]` the output is:
