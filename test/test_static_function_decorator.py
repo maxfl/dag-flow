@@ -11,18 +11,26 @@ from dagflow.wrappers import *
 from dagflow.printl import printl, set_prefix_function, current_level
 set_prefix_function(lambda: '{:<2d} '.format(current_level()),)
 
+call_counter = 0
+
 with Graph() as graph:
     @NodeInstanceStatic(output='array')
     def array():
-        printl('Call array')
+        global call_counter
+        call_counter+=1
+        printl('Call array ({})'.format(call_counter))
 
     @NodeInstanceStatic()
     def adder():
-        printl('Call Adder')
+        global call_counter
+        call_counter+=1
+        printl('Call Adder ({})'.format(call_counter))
 
     @NodeInstanceStatic()
     def multiplier():
-        printl('Call Multiplier')
+        global call_counter
+        call_counter+=1
+        printl('Call Multiplier ({})'.format(call_counter))
 
 def test_00():
     array >> adder
