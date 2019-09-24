@@ -154,7 +154,7 @@ class Node(legs.Legs):
 
     def eval(self):
         self._evaluating = True
-        self._fcn(self.inputs, self.outputs, self)
+        self._fcn(self, self.inputs, self.outputs)
         self._evaluating = False
 
     def freeze(self):

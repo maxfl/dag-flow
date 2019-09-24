@@ -69,7 +69,7 @@ def test_03():
         d.savegraph('output/test3_{:03d}.png'.format(counter))
         counter+=1
 
-    def plotter(fcn, inputs, outputs, node):
+    def plotter(fcn, node, inputs, outputs):
         plot('[start evaluating {}]'.format(node.name))
         fcn(inputs, outputs, node)
         plot('[done evaluating {}]'.format(node.name))

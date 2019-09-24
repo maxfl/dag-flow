@@ -12,27 +12,27 @@ from dagflow.printl import printl, set_prefix_function, current_level
 set_prefix_function(lambda: '{:<2d} '.format(current_level()),)
 
 @NodeClass(output='array')
-def Array(self, inputs, outputs, node):
+def Array(self, node, inputs, outputs):
     """Creates a note with single data output with predefined array"""
     outputs[0].data = N.arange(5, dtype='d')
 
 @NodeClass(missing_input_handler=MissingInputAddOne(output_fmt='result'))
-def Adder(self, inputs, outputs, node):
+def Adder(self, node, inputs, outputs):
     """Adds all the inputs together"""
     out = None
     for input in inputs:
         if out is None:
-            out=outputs[0].data = input.data
+            out=outputs[0].data = input.data.copy()
         else:
             out+=input.data
 
 @NodeClass(missing_input_handler=MissingInputAddOne(output_fmt='result'))
-def Multiplier(self, inputs, outputs, node):
+def Multiplier(self, node, inputs, outputs):
     """Multiplies all the inputs together"""
     out = None
     for input in inputs:
         if out is None:
-            out = outputs[0].data = input.data
+            out = outputs[0].data = input.data.copy()
         else:
             out*=input.data
 
@@ -87,7 +87,7 @@ def test_02():
         initials = [Array(name) for name in ['n1', 'n2', 'n3', 'n4']]
 
         @NodeInstance(name='add', class_kwargs=dict(missing_input_handler=MissingInputAddOne(output_fmt='result')))
-        def s(self, inputs, outputs, node):
+        def s(self, node, inputs, outputs):
             out = None
             for input in inputs:
                 if out is None:
@@ -96,7 +96,7 @@ def test_02():
                     out+=input.data
 
         @NodeInstance(name='mul', class_kwargs=dict(missing_input_handler=MissingInputAddOne(output_fmt='result')))
-        def m(self, inputs, outputs, node):
+        def m(self, node, inputs, outputs):
             out = None
             for input in inputs:
                 if out is None:

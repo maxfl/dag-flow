@@ -42,8 +42,12 @@ class Output(object):
 
     @data.setter
     def data(self, data):
+        if self._datatype is tools.undefineddatatype:
+            self._datatype = type(data)
+        elif self._datatype!=type(data):
+            raise Exception('Unable to change existing data type')
+
         self._data = data
-        self._datatype = type(data)
         return data
 
     @property

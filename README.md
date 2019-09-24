@@ -27,27 +27,27 @@ import numpy as N
 
 # Node functions
 @NodeClass(output='array')
-def Array(self, inputs, outputs, node):
+def Array(self, node, inputs, output):
     """Creates a note with single data output with predefined array"""
     outputs[0].data = N.arange(5, dtype='d')
 
 @NodeClass(missing_input_handler=MissingInputAddOne(output_fmt='result'))
-def Adder(self, inputs, outputs, node):
+def Adder(self, node, inputs, output):
     """Adds all the inputs together"""
     out = None
     for input in inputs:
         if out is None:
-            out=outputs[0].data = input.data
+            out=outputs[0].data = input.data.copy()
         else:
             out+=input.data
 
 @NodeClass(missing_input_handler=MissingInputAddOne(output_fmt='result'))
-def Multiplier(self, inputs, outputs, node):
+def Multiplier(self, node, inputs, output):
     """Multiplies all the inputs together"""
     out = None
     for input in inputs:
         if out is None:
-            out = outputs[0].data = input.data
+            out = outputs[0].data = input.data.copy()
         else:
             out*=input.data
 
