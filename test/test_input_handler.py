@@ -1,5 +1,7 @@
 #!/usr/bin/env python
 
+"""Test missing input handlers"""
+
 from __future__ import print_function
 from dagflow.graph import Graph
 from dagflow.graphviz import savegraph
@@ -8,6 +10,7 @@ from dagflow.wrappers import *
 from dagflow.input_extra import *
 
 def test_00():
+    """Test default handler: fail on connect"""
     graph = Graph()
 
     in1 = graph.add_node('n1', output='o1')
@@ -25,6 +28,7 @@ def test_00():
     savegraph(graph, 'output/missing_input_handler_00.pdf', label='Fail on connect')
 
 def test_01():
+    """Test InputAdd handler: add new input on each new connect"""
     graph = Graph()
 
     in1 = graph.add_node('n1', output='o1')
@@ -44,6 +48,7 @@ def test_01():
     savegraph(graph, 'output/missing_input_handler_01.pdf', label='Add only inputs')
 
 def test_02():
+    """Test InputAddPair handler: add new input on each new connect and add corresponding output as well"""
     graph = Graph()
 
     in1 = graph.add_node('n1', output='o1')
@@ -66,6 +71,7 @@ def test_02():
     savegraph(graph, 'output/missing_input_handler_02.pdf', label='Add inputs and an output for each input')
 
 def test_03():
+    """Test InputAddOne handler: add new input on each new connect and add an output if needed"""
     graph = Graph()
 
     in1 = graph.add_node('n1', output='o1')
@@ -85,6 +91,8 @@ def test_03():
     savegraph(graph, 'output/missing_input_handler_03.pdf', label='Add only inputs and only one output')
 
 def test_04():
+    """Test InputAddOne handler: add new input on each new connect and add an output if needed.
+    This version also sets the corresponding_output for each input"""
     graph = Graph()
 
     in1 = graph.add_node('n1', output='o1')
@@ -108,6 +116,7 @@ def test_04():
     savegraph(graph, 'output/missing_input_handler_04.pdf', label='Add inputs and only one output')
 
 def test_05():
+    """Test InputAddEach handler: add new input on each new connect and add an output for each >> group."""
     graph = Graph()
 
     in1 = graph.add_node('n1', output='o1')
@@ -127,6 +136,8 @@ def test_05():
     savegraph(graph, 'output/missing_input_handler_05.pdf', label='Add inputs and an output for each block')
 
 def test_06():
+    """Test InputAddEach handler: add new input on each new connect and add an output for each >> group.
+    This version also sets the corresponding_output for each input"""
     graph = Graph()
 
     in1 = graph.add_node('n1', output='o1')

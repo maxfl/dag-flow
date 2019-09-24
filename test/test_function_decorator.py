@@ -13,10 +13,12 @@ set_prefix_function(lambda: '{:<2d} '.format(current_level()),)
 
 @NodeClass(output='array')
 def Array(self, inputs, outputs, node):
+    """Creates a note with single data output with predefined array"""
     outputs[0].data = N.arange(5, dtype='d')
 
 @NodeClass(missing_input_handler=MissingInputAddOne(output_fmt='result'))
 def Adder(self, inputs, outputs, node):
+    """Adds all the inputs together"""
     out = None
     for input in inputs:
         if out is None:
@@ -26,6 +28,7 @@ def Adder(self, inputs, outputs, node):
 
 @NodeClass(missing_input_handler=MissingInputAddOne(output_fmt='result'))
 def Multiplier(self, inputs, outputs, node):
+    """Multiplies all the inputs together"""
     out = None
     for input in inputs:
         if out is None:
@@ -34,6 +37,9 @@ def Multiplier(self, inputs, outputs, node):
             out*=input.data
 
 def test_00():
+    """Create four nodes: sum up three of them, multiply the result by the fourth
+    Use Graph methods to build the graph
+    """
     graph = Graph()
     in1 = graph.add_node('n1', nodeclass=Array)
     in2 = graph.add_node('n2', nodeclass=Array)
@@ -53,6 +59,10 @@ def test_00():
     savegraph(graph, 'output/decorators_graph_00.pdf')
 
 def test_01():
+    """Create four nodes: sum up three of them, multiply the result by the fourth
+    Use graph context to create the graph.
+    Use one-line code for connecting the nodes
+    """
     with Graph() as graph:
         initials = [Array(name) for name in ['n1', 'n2', 'n3', 'n4']]
         s = Adder('add')
@@ -68,6 +78,11 @@ def test_01():
     savegraph(graph, 'output/decorators_graph_01.pdf')
 
 def test_02():
+    """Create four nodes: sum up three of them, multiply the result by the fourth
+    Use graph context to create the graph.
+    Use one-line code for connecting the nodes.
+    Use NodeInstance decorator to convert functions directly to node instances.
+    """
     with Graph() as graph:
         initials = [Array(name) for name in ['n1', 'n2', 'n3', 'n4']]
 

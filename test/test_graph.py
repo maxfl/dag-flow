@@ -9,6 +9,7 @@ from dagflow.printl import printl, set_prefix_function, current_level
 set_prefix_function(lambda: '{:<2d} '.format(current_level()),)
 
 def test_01():
+    """Simple test of the graph plotter"""
     g = Graph()
     n1 = g.add_node('node1')
     n2 = g.add_node('node2')
@@ -27,9 +28,10 @@ def test_01():
     out3 >> n3
 
     d = GraphDot(g)
-    d.savegraph('output/test1/test_00.png')
+    d.savegraph('output/test1_00.png')
 
 def test_02():
+    """Simple test of the graph plotter"""
     g = Graph()
     n1 = g.add_node('node1')
     n2 = g.add_node('node2')
@@ -48,13 +50,14 @@ def test_02():
     out3 >> n3
 
     d = GraphDot(g)
-    d.savegraph('output/test2/test_00.png')
+    d.savegraph('output/test2_00.png')
 
     final.data
-    d.savegraph('output/test2/test_01.png')
+    d.savegraph('output/test2_01.png')
 
 counter = 0
 def test_03():
+    """Create a graph of nodes and test evaluation features"""
     g = Graph()
     label = None
     def plot(suffix=''):
@@ -63,7 +66,7 @@ def test_03():
         newlabel = label and label+suffix or suffix
         if newlabel is not None:
             d.set_label(newlabel)
-        d.savegraph('output/test3/test_{:03d}.png'.format(counter))
+        d.savegraph('output/test3_{:03d}.png'.format(counter))
         counter+=1
 
     def plotter(fcn, inputs, outputs, node):
