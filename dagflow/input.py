@@ -23,6 +23,7 @@ class Input(object):
 
         self._output = output
 
+    @property
     def name(self):
         return self._name
 

@@ -29,6 +29,10 @@ class Undefined(object):
     def __bool__(self):
         return False
 
+    def __nonzero__(self):
+        """Python2 compatibility"""
+        return False
+
     def __call__(self, *args, **kwargs):
         pass
 

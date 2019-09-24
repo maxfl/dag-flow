@@ -1,5 +1,4 @@
 from __future__ import print_function
-from dagflow import node
 from dagflow.tools import undefinedgraph
 
 class Graph(object):
@@ -14,6 +13,7 @@ class Graph(object):
         self._outputs = []
 
     def add_node(self, name, **kwargs):
+        from dagflow import node
         NodeClass = kwargs.pop('nodeclass', node.Node)
         newnode = NodeClass(name, graph=self, **kwargs)
         return newnode

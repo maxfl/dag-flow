@@ -1,5 +1,6 @@
 #!/usr/bin/env python
 
+from __future__ import print_function
 from dagflow.graph import Graph
 from dagflow.graphviz import GraphDot
 from dagflow.wrappers import *

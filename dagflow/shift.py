@@ -2,8 +2,12 @@ from __future__ import print_function
 import itertools as I
 from dagflow import iterators, tools
 
-_rshift_scope_id = 0
+# Python2 compatibility
+zip_longest = getattr(I, 'zip_longest', None)
+if not zip_longest:
+    zip_longest = getattr(I, 'izip_longest')
 
+_rshift_scope_id = 0
 def rshift_scope_id():
     global _rshift_scope_id
     ret=_rshift_scope_id
@@ -13,9 +17,9 @@ def rshift_scope_id():
 def rshift(outputs, inputs):
     scope_id = rshift_scope_id()
 
-    for i, (output, input) in enumerate(I.zip_longest(iterators.iter_outputs(outputs),
-                                                      iterators.iter_inputs(inputs, True),
-                                                      fillvalue=tools.undefinedleg)):
+    for i, (output, input) in enumerate(zip_longest(iterators.iter_outputs(outputs),
+                                                    iterators.iter_inputs(inputs, True),
+                                                    fillvalue=tools.undefinedleg)):
         if not output:
             raise Exception('Unable to connect mismatching lists')
 
