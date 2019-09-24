@@ -43,5 +43,5 @@ with Graph() as graph:
 (in4, s) >> m
 
 print('Result is:', m.outputs.result.data)
-savegraph(graph, 'example/dagflow_example.png')
+savegraph(graph, 'output/dagflow_example.png')
 
