@@ -3,14 +3,14 @@ from dagflow.tools import undefinedgraph
 
 class Graph(object):
     _nodes  = None
-    _inputs = None
-    _outputs = None
+    # _inputs = None
+    # _outputs = None
     _context_graph = undefinedgraph
 
     def __init__(self):
         self._nodes   = []
-        self._inputs  = []
-        self._outputs = []
+        # self._inputs  = []
+        # self._outputs = []
 
     def add_node(self, name, **kwargs):
         from dagflow import node
@@ -25,10 +25,12 @@ class Graph(object):
         return (self.add_node(name, fcn, **kwargs) for name, fcn in pairs)
 
     def _add_input(self, input):
-        self._inputs.append(input)
+        # self._inputs.append(input)
+        pass
 
     def _add_output(self, output):
-        self._outputs.append(output)
+        # self._outputs.append(output)
+        pass
 
     def _wrap_fcns(self, *args):
         for node in self._nodes:

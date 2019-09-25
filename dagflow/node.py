@@ -25,9 +25,9 @@ class Node(legs.Legs):
             self._fcn = newfcn
 
         self._fcn_chain = []
-        self._graph = kwargs.pop('graph', graph.Graph.current())
-        if self._graph:
-            self._graph.register_node(self)
+        self.graph = kwargs.pop('graph', None)
+        if not self.graph:
+            self.graph=graph.Graph.current()
         self._label = kwargs.pop('label', tools.undefinedname)
 
         for opt in ('immediate', 'auto_freeze', 'frozen'):
@@ -82,6 +82,19 @@ class Node(legs.Legs):
     @property
     def immediate(self):
         return self._immediate
+
+    @property
+    def graph(self):
+        return self._graph
+
+    @graph.setter
+    def graph(self, graph):
+        if not graph:
+            return
+        if self._graph:
+            raise Exception('Graph is already defined')
+        self._graph = graph
+        self._graph.register_node(self)
 
     def label(self, *args, **kwargs):
         if self._label:
@@ -280,35 +293,3 @@ class StaticNode(Node):
         def wrapped_fcn():
             wrap_fcn(prev_fcn, self, self.inputs, self.outputs)
         return wrapped_fcn
-
-class MemberNode(Node):
-    """Function signature: fcn(self)"""
-    _obj = None
-    def __init__(self, *args, **kwargs):
-        Node.__init__(self, *args, **kwargs)
-
-    def eval(self):
-        self._evaluating = True
-        self.inputs._touch()
-        ret = self._fcn(self._obj)
-        self._evaluating = False
-        return ret
-
-    @property
-    def obj(self):
-        return self._obj
-
-    @obj.setter
-    def obj(self, obj):
-        self._obj = obj
-
-    def _stash_fcn(self):
-        prev_fcn = self._fcn
-        self._fcn_chain.append(prev_fcn)
-        return lambda self1, inputs, outputs: prev_fcn(self1._obj)
-
-    def _make_wrap(self, prev_fcn, wrap_fcn):
-        def wrapped_fcn(self1):
-            wrap_fcn(prev_fcn, self1, self1.inputs, self1.outputs)
-        return wrapped_fcn
-

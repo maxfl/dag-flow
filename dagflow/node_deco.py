@@ -1,5 +1,6 @@
 from __future__ import print_function
-from dagflow.node import FunctionNode, StaticNode, MemberNode
+from dagflow.node import FunctionNode, StaticNode
+from dagflow.membernode import MemberNode
 from dagflow.input_extra import MissingInputAddOne
 
 def NodeClass(fcn=None, **kwargsdeco):
@@ -66,8 +67,3 @@ def NodeInstanceMember(fcn=None, **kwargsinstance):
 
     return lambda fcn1: NodeInstanceMember(fcn1, **kwargsinstance)
 
-def initialize_member_nodes(self):
-    for key in dir(self):
-        val = getattr(self, key)
-        if isinstance(val, MemberNode):
-            val.obj = self
