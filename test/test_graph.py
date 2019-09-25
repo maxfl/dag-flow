@@ -53,6 +53,7 @@ def test_02():
     d.savegraph('output/test2_00.png')
 
     final.data
+    d = GraphDot(g)
     d.savegraph('output/test2_01.png')
 
 def test_02a():
@@ -76,6 +77,7 @@ def test_02a():
     d.savegraph('output/test2a_00.png')
 
     print(out4.data)
+    d = GraphDot(g)
     d.savegraph('output/test2a_01.png')
 
 
