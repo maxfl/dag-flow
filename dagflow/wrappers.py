@@ -7,6 +7,16 @@ def printer(fcn, node, inputs, outputs):
         fcn(node, inputs, outputs)
     printl('... done with {node}'.format(node=node.name))
 
+def before_printer(fcn, node, inputs, outputs):
+    printl('Evaluate {node}: {label}'.format(node=node.name, label=node.label()))
+    with next_level():
+        fcn(node, inputs, outputs)
+
+def after_printer(fcn, node, inputs, outputs):
+    with next_level():
+        fcn(node, inputs, outputs)
+    printl('Evaluate {node}: {label}'.format(node=node.name, label=node.label()))
+
 def dataprinter(fcn, node, inputs, outputs):
     fcn(node, inputs, outputs)
     for i, output in enumerate(outputs):

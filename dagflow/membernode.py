@@ -53,6 +53,6 @@ class MemberNode(Node):
 
     def _make_wrap(self, prev_fcn, wrap_fcn):
         def wrapped_fcn(self1):
-            wrap_fcn(prev_fcn, self1, self1.inputs, self1.outputs)
+            wrap_fcn(prev_fcn, self, self.inputs, self.outputs)
         return wrapped_fcn
 
