@@ -14,7 +14,7 @@ set_prefix_function(lambda: '{:<2d} '.format(current_level()),)
 call_counter = 0
 
 with Graph() as graph:
-    @NodeInstanceStatic(output='array')
+    @NodeInstanceStatic()
     def array():
         global call_counter
         call_counter+=1

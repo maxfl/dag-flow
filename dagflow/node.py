@@ -5,6 +5,8 @@ from dagflow import graph
 
 class Node(legs.Legs):
     """
+    Function signature: fcn(node, inputs, outputs)
+
     Note: _fcn should be a static function with signature (node, inputs, outputs)
 
     - Function defined as instance property will become a static method:
@@ -155,13 +157,18 @@ class Node(legs.Legs):
         input = self._add_input(iname, output)
         return input, output
 
-    def _wrap_fcn(self, wrap_fcn, *other_fcns):
-        prev_fcn = self._fcn
-        self._fcn_chain.append(prev_fcn)
-        def wrapped_fcn(*args, **kwargs):
-            wrap_fcn(prev_fcn, *args, **kwargs)
+    def _stash_fcn(self):
+        self._fcn_chain.append(self._fcn)
+        return self._fcn
 
-        self._fcn = wrapped_fcn
+    def _make_wrap(self, prev_fcn, wrap_fcn):
+        def wrapped_fcn(node, inputs, outputs):
+            wrap_fcn(prev_fcn, node, inputs, outputs)
+        return wrapped_fcn
+
+    def _wrap_fcn(self, wrap_fcn, *other_fcns):
+        prev_fcn = self._stash_fcn()
+        self._fcn = self._make_wrap(prev_fcn, wrap_fcn)
 
         if other_fcns:
             self._wrap_fcn(*other_fcns)
@@ -178,15 +185,18 @@ class Node(legs.Legs):
         if not self._tainted and not force:
             return
 
-        self.eval()
+        ret = self.eval()
         self._tainted = False
         if self._auto_freeze:
             self._frozen = True
 
+        return ret
+
     def eval(self):
         self._evaluating = True
-        self._fcn(self, self.inputs, self.outputs)
+        ret = self._fcn(self, self.inputs, self.outputs)
         self._evaluating = False
+        return ret
 
     def freeze(self):
         if self._frozen:
@@ -219,10 +229,14 @@ class Node(legs.Legs):
         self._tainted = True
 
         if self._immediate:
-            self.touch()
+            ret = self.touch()
+        else:
+            ret = None
 
         for output in self.outputs:
             output.taint()
+
+        return ret
 
     def print(self):
         print('Node {}: ->[{}],[{}]->'.format(self._name, len(self.inputs), len(self.outputs)))
@@ -231,3 +245,56 @@ class Node(legs.Legs):
 
         for i, output in enumerate(self.outputs):
             print('  ', i, output)
+
+class StaticNode(Node):
+    """Function signature: fcn()"""
+    def __init__(self, *args, **kwargs):
+        Node.__init__(self, *args, **kwargs)
+
+    def eval(self):
+        self._evaluating = True
+        self.inputs._touch()
+        ret = self._fcn()
+        self._evaluating = False
+        return ret
+
+    def _stash_fcn(self):
+        prev_fcn = self._fcn
+        self._fcn_chain.append(prev_fcn)
+        return lambda node, inputs, outputs: prev_fcn()
+
+    def _make_wrap(self, prev_fcn, wrap_fcn):
+        def wrapped_fcn():
+            wrap_fcn(prev_fcn, self, self.inputs, self.outputs)
+        return wrapped_fcn
+
+class MemberNode(Node):
+    """Function signature: fcn(self)"""
+    _obj = None
+    def __init__(self, *args, **kwargs):
+        Node.__init__(self, *args, **kwargs)
+
+    def eval(self):
+        self._evaluating = True
+        ret = self._fcn(self._obj)
+        self._evaluating = False
+        return ret
+
+    @property
+    def obj(self):
+        return self._obj
+
+    @obj.setter
+    def obj(self, obj):
+        self._obj = obj
+
+    def _stash_fcn(self):
+        prev_fcn = self._fcn
+        self._fcn_chain.append(prev_fcn)
+        return lambda self1, inputs, outputs: prev_fcn(self1._obj)
+
+    def _make_wrap(self, prev_fcn, wrap_fcn):
+        def wrapped_fcn(self1):
+            wrap_fcn(prev_fcn, self1, self1.inputs, self1.outputs)
+        return wrapped_fcn
+
