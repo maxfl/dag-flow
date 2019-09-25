@@ -276,6 +276,7 @@ class MemberNode(Node):
 
     def eval(self):
         self._evaluating = True
+        self.inputs._touch()
         ret = self._fcn(self._obj)
         self._evaluating = False
         return ret
