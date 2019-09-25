@@ -2,6 +2,7 @@ from __future__ import print_function
 from dagflow import tools
 from dagflow.shift import rshift, lshift
 from dagflow.edges import EdgeContainer
+import itertools as I
 
 class Output(object):
     _name   = tools.undefinedname
@@ -89,6 +90,19 @@ class Output(object):
 
     def _deep_iter_corresponding_outputs(self):
         raise tools.StopNesting(self)
+
+    def repeat(self):
+        return RepeatedOutput(self)
+
+class RepeatedOutput(object):
+    def __init__(self, output):
+        self._output = output
+
+    def __iter__(self):
+        return I.cycle((self._output,))
+
+    __rshift__  = rshift
+    __rlshift__ = lshift
 
 class Outputs(EdgeContainer):
     _datatype = Output

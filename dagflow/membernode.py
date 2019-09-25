@@ -6,15 +6,7 @@ from dagflow.graph import Graph
 class MemberNodesHolder(object):
     _graph = undefinedgraph
     def __init__(self, graph=None):
-        if graph is True:
-            self._graph = Graph()
-        elif isinstance(graph, str):
-            self._graph = Graph(label=graph)
-        elif isinstance(graph, dict):
-            self._graph = Graph(**kwargs)
-        elif graph:
-            self._graph = graph
-
+        self.graph=graph
         for key in dir(self):
             val = getattr(self, key)
             if isinstance(val, MemberNode):
@@ -24,6 +16,19 @@ class MemberNodesHolder(object):
     @property
     def graph(self):
         return self._graph
+
+    @graph.setter(self, graph):
+        if self._graph:
+            raise Exception('Graph is already set')
+
+        if graph is True:
+            self._graph = Graph()
+        elif isinstance(graph, str):
+            self._graph = Graph(label=graph)
+        elif isinstance(graph, dict):
+            self._graph = Graph(**kwargs)
+        elif graph:
+            self._graph = graph
 
 class MemberNode(Node):
     """Function signature: fcn(self)"""

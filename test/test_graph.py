@@ -55,6 +55,30 @@ def test_02():
     final.data
     d.savegraph('output/test2_01.png')
 
+def test_02a():
+    """Simple test of the graph plotter"""
+    g = Graph()
+    n1 = g.add_node('node1')
+    n2 = g.add_node('node2')
+    n3 = g.add_node('node3')
+    n4 = g.add_node('node4')
+    g._wrap_fcns(toucher, printer)
+
+    out1 = n1._add_output('o1')
+
+    in2, out2 = n2._add_pair('i1', 'o1')
+    in3, out3 = n3._add_pair('i1', 'o1')
+    in4, out4 = n4._add_pair('i1', 'o1')
+
+    out1.repeat() >> (in2, in3, in4)
+
+    d = GraphDot(g)
+    d.savegraph('output/test2a_00.png')
+
+    print(out4.data)
+    d.savegraph('output/test2a_01.png')
+
+
 counter = 0
 def test_03():
     """Create a graph of nodes and test evaluation features"""
@@ -187,4 +211,5 @@ def test_03():
 if __name__ == "__main__":
     test_01()
     test_02()
+    test_02a()
     test_03()

@@ -27,6 +27,9 @@ def rshift(outputs, inputs):
             missing_input_handler = getattr(inputs, '_missing_input_handler', lambda *args, **kwargs: None)
             input = missing_input_handler(scope=scope_id)
 
+            if not input:
+                break
+
         output._connect_to(input)
 
     corresponding_outputs = tuple(iterators.iter_corresponding_outputs(inputs))
