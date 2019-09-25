@@ -22,9 +22,9 @@ def NodeInstance(fcn=None, **kwargsinstance):
     """Create a node class based on a function and immediately instantiate it.
     The result is a node class instance which may be used as node."""
     if fcn:
-        kwargsdeco=kwargsinstance.pop('class_kwargs', {})
-        kwargsdeco.setdefault('name', fcn.__name__)
-        cls=NodeClass(fcn, **kwargsdeco)
+        kwargsclass=kwargsinstance.pop('class_kwargs', {})
+        kwargsclass.setdefault('name', fcn.__name__)
+        cls=NodeClass(fcn, **kwargsclass)
         return cls(**kwargsinstance)
 
     return lambda fcn1: NodeInstance(fcn1, **kwargsinstance)
@@ -36,14 +36,15 @@ def NodeInstanceStatic(fcn=None, **kwargsinstance):
 
     To be used to build a dependency chain of a functions which do not read
     inputs and do not write outputs, but rather refer to some common data."""
+    kwargsinstance.setdefault('output', 'result')
     if fcn:
-        kwargsdeco=kwargsinstance.pop('class_kwargs', {})
-        kwargsdeco.setdefault('missing_input_handler', MissingInputAddOne())
-        kwargsdeco.setdefault('name', fcn.__name__)
+        kwargsclass=kwargsinstance.pop('class_kwargs', {})
+        kwargsclass.setdefault('missing_input_handler', MissingInputAddOne())
+        kwargsclass.setdefault('name', fcn.__name__)
         def staticfcn(node, inputs, outputs):
             inputs._touch()
             return fcn()
-        cls=NodeClass(staticfcn, **kwargsdeco)
+        cls=NodeClass(staticfcn, **kwargsclass)
         return cls(**kwargsinstance)
 
     return lambda fcn1: NodeInstanceStatic(fcn1, **kwargsinstance)
