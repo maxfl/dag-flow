@@ -61,10 +61,7 @@ def NodeInstanceMember(fcn=None, **kwargsinstance):
         kwargsclass=kwargsinstance.pop('class_kwargs', {})
         kwargsclass.setdefault('missing_input_handler', MissingInputAddOne())
         kwargsclass.setdefault('name', fcn.__name__)
-        def memberfcn(node, inputs, outputs):
-            inputs._touch()
-            return fcn()
-        cls=NodeClass(staticfcn, parent=MemberNode, **kwargsclass)
+        cls=NodeClass(fcn, parent=MemberNode, **kwargsclass)
         return cls(**kwargsinstance)
 
     return lambda fcn1: NodeInstanceMember(fcn1, **kwargsinstance)
