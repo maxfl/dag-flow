@@ -17,6 +17,10 @@ class MemberNodesHolder(object):
                 val.obj=self
                 val.graph=self._graph
 
+    @property
+    def graph(self):
+        return self._graph
+
 class MemberNode(Node):
     """Function signature: fcn(self)"""
     _obj = None
