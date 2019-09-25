@@ -45,7 +45,7 @@ class Node(legs.Legs):
             self._add_output(output)
 
         if kwargs:
-            raise Exception('Unparsed arguments')
+            raise Exception('Unparsed arguments: {!s}'.format(kwargs))
 
     @property
     def name(self):

@@ -1,22 +1,31 @@
 from __future__ import print_function
-from dagflow.tools import undefinedgraph
+from dagflow import tools
 
 class Graph(object):
     _nodes  = None
     # _inputs = None
     # _outputs = None
-    _context_graph = undefinedgraph
+    _context_graph = tools.undefinedgraph
+    _label         = tools.undefinedname
 
-    def __init__(self):
+    def __init__(self, **kwargs):
         self._nodes   = []
+        self._label = kwargs.pop('label', tools.undefinedname)
         # self._inputs  = []
         # self._outputs = []
+
+        if kwargs:
+            raise Exception('Unparsed arguments: {!s}'.format(kwargs))
 
     def add_node(self, name, **kwargs):
         from dagflow import node
         NodeClass = kwargs.pop('nodeclass', node.FunctionNode)
         newnode = NodeClass(name, graph=self, **kwargs)
         return newnode
+
+    def label(self, *args, **kwargs):
+        if self._label:
+            return self._label.format(self._label, nodes=len(self._nodes))
 
     def register_node(self, node):
         self._nodes.append(node)

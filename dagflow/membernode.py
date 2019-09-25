@@ -8,7 +8,11 @@ class MemberNodesHolder(object):
     def __init__(self, graph=None):
         if graph is True:
             self._graph = Graph()
-        if graph:
+        elif isinstance(graph, str):
+            self._graph = Graph(label=graph)
+        elif isinstance(graph, dict):
+            self._graph = Graph(**kwargs)
+        elif graph:
             self._graph = graph
 
         for key in dir(self):

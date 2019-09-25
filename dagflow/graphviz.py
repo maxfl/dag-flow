@@ -21,7 +21,7 @@ else:
             kwargs.setdefault('fontsize', 10)
             kwargs.setdefault('labelfontsize', 10)
             kwargs.setdefault('rankdir', 'LR')
-            label = kwargs.pop('label', None)
+            label = kwargs.pop('label', dag.label())
 
             self._nodes = OrderedDict()
             self._nodes_open_input = OrderedDict()
