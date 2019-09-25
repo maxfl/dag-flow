@@ -3,7 +3,7 @@
 from __future__ import print_function
 from dagflow.input import Input
 from dagflow.output import Output
-from dagflow.node import Node
+from dagflow.node import FunctionNode
 from dagflow.graph import Graph
 from dagflow.wrappers import *
 
@@ -14,8 +14,8 @@ def test_01():
     o >> i
 
 def test_02():
-    n1 = Node('node1')
-    n2 = Node('node2')
+    n1 = FunctionNode('node1')
+    n2 = FunctionNode('node2')
 
     n1._add_output('o1')
     n1._add_output('o2')
@@ -27,8 +27,8 @@ def test_02():
     n1 >> n2
 
 def test_03():
-    n1 = Node('node1')
-    n2 = Node('node2')
+    n1 = FunctionNode('node1')
+    n2 = FunctionNode('node2')
 
     out = n1._add_output('o1')
 
@@ -38,8 +38,8 @@ def test_03():
     out >> n2
 
 def test_04():
-    n1 = Node('node1')
-    n2 = Node('node2')
+    n1 = FunctionNode('node1')
+    n2 = FunctionNode('node2')
 
     out = n1._add_output('o1')
 
@@ -48,8 +48,8 @@ def test_04():
     final = out >> n2
 
 def test_05():
-    n1 = Node('node1')
-    n2 = Node('node2')
+    n1 = FunctionNode('node1')
+    n2 = FunctionNode('node2')
 
     out1 = n1._add_output('o1')
     out2 = n1._add_output('o2')
@@ -60,8 +60,8 @@ def test_05():
     (out1, out2) >> n2
 
 def test_06():
-    n1 = Node('node1')
-    n2 = Node('node2')
+    n1 = FunctionNode('node1')
+    n2 = FunctionNode('node2')
 
     out1 = n1._add_output('o1')
     out2 = n1._add_output('o2')

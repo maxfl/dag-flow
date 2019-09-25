@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 
 from __future__ import print_function
-from dagflow.node import Node
+from dagflow.node import FunctionNode
 from dagflow.graph import Graph
 from dagflow.graphviz import savegraph
 from dagflow.input_extra import MissingInputAddOne
@@ -11,17 +11,17 @@ from dagflow.wrappers import *
 from dagflow.printl import printl, set_prefix_function, current_level
 set_prefix_function(lambda: '{:<2d} '.format(current_level()),)
 
-class Array(Node):
+class Array(FunctionNode):
     """Creates a note with single data output with predefined array"""
     def __init__(self, name, array):
-        Node.__init__(self, name)
+        FunctionNode.__init__(self, name)
         self._add_output('array')
         self.outputs.array.data = N.asanyarray(array)
 
-class Adder(Node):
+class Adder(FunctionNode):
     """Adds all the inputs together"""
     def __init__(self, name):
-        Node.__init__(self, name)
+        FunctionNode.__init__(self, name)
         self._missing_input_handler = MissingInputAddOne(output_fmt='result')
 
     @staticmethod
@@ -35,10 +35,10 @@ class Adder(Node):
 
         outputs[0].data = ret
 
-class Multiplier(Node):
+class Multiplier(FunctionNode):
     """Multiplies all the inputs together"""
     def __init__(self, name):
-        Node.__init__(self, name)
+        FunctionNode.__init__(self, name)
         self._missing_input_handler = MissingInputAddOne(output_fmt='result')
 
     @staticmethod

@@ -4,39 +4,6 @@ from dagflow.tools import IsIterable
 from dagflow import graph
 
 class Node(legs.Legs):
-    """
-    Function signature: fcn(node, inputs, outputs)
-
-    Note: _fcn should be a static function with signature (node, inputs, outputs)
-
-    - Function defined as instance property will become a static method:
-        class Node(...):
-            def __init__(self):
-                self._fcn = ...
-        node = Node()
-        node.fcn() # will have NO self provided as first argument
-
-    - Fucntion defined in a nested class with staticmethod:
-        class Other(Node
-            @staticmethod
-            def _fcn():
-                ...
-
-        node = Node()
-        node.fcn() # will have NO self provided as first argument
-
-    - [deprecated] Function defined as class property will become a bound method:
-        class Node(...):
-            _fcn = ...
-        node = Node()
-        node.fcn() # will have self provided as first argument
-
-    - [deprecated] Function defined via staticmethod decorator as class property will become a static method:
-        class Node(...):
-            _fcn = staticmethod(...)
-        node = Node()
-        node.fcn() # will have NO self provided as first argument
-    """
     _name           = tools.undefinedname
     _label          = tools.undefinedname
     _graph          = tools.undefinedgraph
@@ -157,15 +124,6 @@ class Node(legs.Legs):
         input = self._add_input(iname, output)
         return input, output
 
-    def _stash_fcn(self):
-        self._fcn_chain.append(self._fcn)
-        return self._fcn
-
-    def _make_wrap(self, prev_fcn, wrap_fcn):
-        def wrapped_fcn(node, inputs, outputs):
-            wrap_fcn(prev_fcn, node, inputs, outputs)
-        return wrapped_fcn
-
     def _wrap_fcn(self, wrap_fcn, *other_fcns):
         prev_fcn = self._stash_fcn()
         self._fcn = self._make_wrap(prev_fcn, wrap_fcn)
@@ -177,6 +135,12 @@ class Node(legs.Legs):
         if not self._fcn_chain:
             raise Exception('Unable to unwrap bare function')
         self._fcn = self._fcn_chain.pop()
+
+    def _stash_fcn(self):
+        raise Exception('Unimplemented method: use FunctionNode, StaticNode or MemberNode')
+
+    def _make_wrap(self, prev_fcn, wrap_fcn):
+        raise Exception('Unimplemented method: use FunctionNode, StaticNode or MemberNode')
 
     def touch(self, force=False):
         if self._frozen:
@@ -193,10 +157,7 @@ class Node(legs.Legs):
         return ret
 
     def eval(self):
-        self._evaluating = True
-        ret = self._fcn(self, self.inputs, self.outputs)
-        self._evaluating = False
-        return ret
+        raise Exception('Unimplemented method: use FunctionNode, StaticNode or MemberNode')
 
     def freeze(self):
         if self._frozen:
@@ -245,6 +206,58 @@ class Node(legs.Legs):
 
         for i, output in enumerate(self.outputs):
             print('  ', i, output)
+
+class FunctionNode(Node):
+    """Function signature: fcn(node, inputs, outputs)
+
+    Note: _fcn should be a static function with signature (node, inputs, outputs)
+
+    - Function defined as instance property will become a static method:
+        class Node(...):
+            def __init__(self):
+                self._fcn = ...
+        node = Node()
+        node.fcn() # will have NO self provided as first argument
+
+    - Fucntion defined in a nested class with staticmethod:
+        class Other(Node
+            @staticmethod
+            def _fcn():
+                ...
+
+        node = Node()
+        node.fcn() # will have NO self provided as first argument
+
+    - [deprecated] Function defined as class property will become a bound method:
+        class Node(...):
+            _fcn = ...
+        node = Node()
+        node.fcn() # will have self provided as first argument
+
+    - [deprecated] Function defined via staticmethod decorator as class property will become a static method:
+        class Node(...):
+            _fcn = staticmethod(...)
+        node = Node()
+        node.fcn() # will have NO self provided as first argument
+    """
+
+    def __init__(self, *args, **kwargs):
+        Node.__init__(self, *args, **kwargs)
+
+    def _stash_fcn(self):
+        self._fcn_chain.append(self._fcn)
+        return self._fcn
+
+    def _make_wrap(self, prev_fcn, wrap_fcn):
+        def wrapped_fcn(node, inputs, outputs):
+            wrap_fcn(prev_fcn, node, inputs, outputs)
+        return wrapped_fcn
+
+    def eval(self):
+        self._evaluating = True
+        ret = self._fcn(self, self.inputs, self.outputs)
+        self._evaluating = False
+        return ret
 
 class StaticNode(Node):
     """Function signature: fcn()"""

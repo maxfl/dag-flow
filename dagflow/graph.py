@@ -14,7 +14,7 @@ class Graph(object):
 
     def add_node(self, name, **kwargs):
         from dagflow import node
-        NodeClass = kwargs.pop('nodeclass', node.Node)
+        NodeClass = kwargs.pop('nodeclass', node.FunctionNode)
         newnode = NodeClass(name, graph=self, **kwargs)
         return newnode
 

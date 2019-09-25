@@ -1,5 +1,5 @@
 from __future__ import print_function
-from dagflow.node import Node, StaticNode, MemberNode
+from dagflow.node import FunctionNode, StaticNode, MemberNode
 from dagflow.input_extra import MissingInputAddOne
 
 def NodeClass(fcn=None, **kwargsdeco):
@@ -7,13 +7,13 @@ def NodeClass(fcn=None, **kwargsdeco):
     should be instantiated in order to be used as node."""
     if fcn:
         kwargsdeco['fcn'] = fcn
-        parent = kwargsdeco.pop('parent', Node)
+        parent = kwargsdeco.pop('parent', FunctionNode)
         class NewNodeClass(parent):
             def __init__(self, *args, **kwargsclass):
                 self._fcn = fcn
                 kwargs = dict(kwargsclass, **kwargsdeco)
 
-                Node.__init__(self, *args, **kwargs)
+                parent.__init__(self, *args, **kwargs)
 
         return NewNodeClass
 
