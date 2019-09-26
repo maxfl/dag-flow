@@ -1,5 +1,4 @@
 from __future__ import print_function
-from dagflow.node import Node
 from dagflow import shift
 
 class NodeGroup(object):
