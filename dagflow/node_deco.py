@@ -1,6 +1,6 @@
 from __future__ import print_function
 from dagflow.node import FunctionNode, StaticNode
-from dagflow.membernode import MemberNode
+from dagflow.membernode import MemberNode, StaticMemberNode
 from dagflow.input_extra import MissingInputAddOne
 
 def NodeClass(fcn=None, **kwargsdeco):
@@ -20,50 +20,45 @@ def NodeClass(fcn=None, **kwargsdeco):
 
     return lambda fcn1: NodeClass(fcn1, **kwargsdeco)
 
-def NodeInstance(fcn=None, **kwargsinstance):
-    """Create a node class based on a function and immediately instantiate it.
-    The result is a node class instance which may be used as node."""
+def _NodeInstance(fcn=None, **kwargsinstance):
+    """
+    Create a node class instantiate it. The result is a node class instance which may be used as node.
+    The node type is defined by the parent keyword
+    """
     if fcn:
         kwargsclass=kwargsinstance.pop('class_kwargs', {})
         kwargsclass.setdefault('name', fcn.__name__)
         cls=NodeClass(fcn, **kwargsclass)
         return cls(**kwargsinstance)
 
-    return lambda fcn1: NodeInstance(fcn1, **kwargsinstance)
+    return lambda fcn1: _NodeInstance(fcn1, **kwargsinstance)
+
+def NodeInstance(fcn=None, **kwargsinstance):
+    """
+    Function signature _fcn(node, inputs, ouputs)
+    """
+    return _NodeInstance(fcn, **kwargsinstance)
 
 def NodeInstanceStatic(fcn=None, **kwargsinstance):
-    """Create a node class based on a function with empty signature and
-    immediately instantiate it. The result is a node class instance which may
-    be used as node.
-
-    To be used to build a dependency chain of a functions which do not read
-    inputs and do not write outputs, but rather refer to some common data."""
-
+    """
+    Function signature _fcn()
+    """
     kwargsinstance.setdefault('output', 'result')
-    if fcn:
-        kwargsclass=kwargsinstance.pop('class_kwargs', {})
-        kwargsclass.setdefault('missing_input_handler', MissingInputAddOne())
-        kwargsclass.setdefault('name', fcn.__name__)
-        cls=NodeClass(fcn, parent=StaticNode, **kwargsclass)
-        return cls(**kwargsinstance)
-
-    return lambda fcn1: NodeInstanceStatic(fcn1, **kwargsinstance)
+    kwargsinstance['class_kwargs']=dict(parent=StaticNode, missing_input_handler=MissingInputAddOne())
+    return _NodeInstance(fcn, **kwargsinstance)
 
 def NodeInstanceMember(fcn=None, **kwargsinstance):
-    """Create a node class based on a class member function with empty signature and
-    immediately instantiate it. The result is a node class instance which may
-    be used as node.
+    """
+    Function signature _fcn(master, node, inputs, ouputs)
+    """
+    kwargsinstance['class_kwargs']=dict(parent=MemberNode)
+    return _NodeInstance(fcn, parent=MemberNode, **kwargsinstance)
 
-    To be used to build a dependency chain of a functions which do not read
-    inputs and do not write outputs, but rather refer to some common data."""
-
+def NodeInstanceStaticMember(fcn=None, **kwargsinstance):
+    """
+    Function signature _fcn(master)
+    """
     kwargsinstance.setdefault('output', 'result')
-    if fcn:
-        kwargsclass=kwargsinstance.pop('class_kwargs', {})
-        kwargsclass.setdefault('missing_input_handler', MissingInputAddOne())
-        kwargsclass.setdefault('name', fcn.__name__)
-        cls=NodeClass(fcn, parent=MemberNode, **kwargsclass)
-        return cls(**kwargsinstance)
-
-    return lambda fcn1: NodeInstanceMember(fcn1, **kwargsinstance)
+    kwargsinstance['class_kwargs']=dict(parent=StaticMemberNode, missing_input_handler=MissingInputAddOne())
+    return _NodeInstance(fcn, **kwargsinstance)
 

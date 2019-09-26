@@ -76,13 +76,25 @@ class Legs(object):
             print(i, output)
 
     def __rshift__(self, other):
+        """
+        self >> other
+        """
         return shift.rshift(self, other)
 
     def __rlshift__(self, other):
+        """
+        other << self
+        """
         return shift.rshift(self, other)
 
     def __lshift__(self, other):
+        """
+        self << other
+        """
         return shift.lshift(self, other)
 
     def __rrshift__(self, other):
+        """
+        other >> self
+        """
         return shift.lshift(self, other)

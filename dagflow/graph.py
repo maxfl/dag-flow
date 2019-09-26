@@ -1,18 +1,14 @@
 from __future__ import print_function
 from dagflow import tools
+from dagflow.node_group import NodeGroup
 
-class Graph(object):
-    _nodes  = None
-    # _inputs = None
-    # _outputs = None
+class Graph(NodeGroup):
     _context_graph = tools.undefinedgraph
     _label         = tools.undefinedname
 
-    def __init__(self, **kwargs):
-        self._nodes   = []
+    def __init__(self, *args, **kwargs):
+        NodeGroup.__init__(self, *args)
         self._label = kwargs.pop('label', tools.undefinedname)
-        # self._inputs  = []
-        # self._outputs = []
 
         if kwargs:
             raise Exception('Unparsed arguments: {!s}'.format(kwargs))
@@ -27,9 +23,6 @@ class Graph(object):
         if self._label:
             return self._label.format(self._label, nodes=len(self._nodes))
 
-    def register_node(self, node):
-        self._nodes.append(node)
-
     def add_nodes(self, pairs, **kwargs):
         return (self.add_node(name, fcn, **kwargs) for name, fcn in pairs)
 
@@ -40,14 +33,6 @@ class Graph(object):
     def _add_output(self, output):
         # self._outputs.append(output)
         pass
-
-    def _wrap_fcns(self, *args):
-        for node in self._nodes:
-            node._wrap_fcn(*args)
-
-    def _unwrap_fcns(self):
-        for node in self._nodes:
-            node._unwrap_fcn()
 
     def print(self):
         print('Graph with {} nodes'.format(len(self._nodes)))
@@ -63,4 +48,4 @@ class Graph(object):
         return self
 
     def __exit__(self, *args, **kwargs):
-        Graph._context_graph = undefinedgraph
+        Graph._context_graph = tools.undefinedgraph
