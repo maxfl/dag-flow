@@ -17,7 +17,8 @@ class MemberNodesHolder(object):
     def graph(self):
         return self._graph
 
-    @graph.setter(self, graph):
+    @graph.setter
+    def graph(self, graph):
         if self._graph:
             raise Exception('Graph is already set')
 
