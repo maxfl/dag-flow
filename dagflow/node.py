@@ -169,8 +169,20 @@ class Node(legs.Legs):
 
         return ret
 
-    def eval(self):
+    def _eval(self):
         raise Exception('Unimplemented method: use FunctionNode, StaticNode or MemberNode')
+
+    def eval(self):
+        self._evaluating = True
+
+        try:
+            ret = self._eval()
+        except:
+            self._evaluating = False
+            raise
+
+        self._evaluating = False
+        return ret
 
     def freeze(self):
         if self._frozen:
@@ -266,9 +278,13 @@ class FunctionNode(Node):
             wrap_fcn(prev_fcn, node, inputs, outputs)
         return wrapped_fcn
 
-    def eval(self):
+    def _eval(self):
         self._evaluating = True
-        ret = self._fcn(self, self.inputs, self.outputs)
+        try:
+            ret = self._fcn(self, self.inputs, self.outputs)
+        except:
+            self._evaluating = False
+            raise
         self._evaluating = False
         return ret
 
@@ -277,7 +293,7 @@ class StaticNode(Node):
     def __init__(self, *args, **kwargs):
         Node.__init__(self, *args, **kwargs)
 
-    def eval(self):
+    def _eval(self):
         self._evaluating = True
         self.inputs._touch()
         ret = self._fcn()
