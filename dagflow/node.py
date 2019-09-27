@@ -290,12 +290,15 @@ class FunctionNode(Node):
 
 class StaticNode(Node):
     """Function signature: fcn()"""
+    _touch_inputs = True
     def __init__(self, *args, **kwargs):
+        self._touch_inputs = kwargs.pop('touch_inputs', True)
         Node.__init__(self, *args, **kwargs)
 
     def _eval(self):
         self._evaluating = True
-        self.inputs._touch()
+        if self._touch_inputs:
+            self.inputs._touch()
         ret = self._fcn()
         self._evaluating = False
         return ret
