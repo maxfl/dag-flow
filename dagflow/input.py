@@ -40,6 +40,16 @@ class Input(object):
         return self._output
 
     @property
+    def invalid(self):
+        """Checks validity of the input data"""
+        return self._output.invalid
+
+    @invalid.setter
+    def invalid(self, invalid):
+        """Sets the validity of the current node"""
+        self._node.invalid = invalid
+
+    @property
     def corresponding_output(self):
         return self._corresponding_output
 

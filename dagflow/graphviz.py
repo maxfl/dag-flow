@@ -119,6 +119,8 @@ else:
         def _set_style_node(self, node, attr):
             if not node:
                 attr['color'] = 'gray'
+            elif node.invalid:
+                attr['color'] = 'black'
             elif node.evaluating:
                 attr['color'] = 'gold'
             elif node.tainted:

@@ -10,12 +10,16 @@ class Node(legs.Legs):
     _fcn            = tools.undefinedfunction
     _fcn_chain      = None
 
-    # Taintflag and options
+    # Taintflag and status
     _tainted        = True
     _frozen         = False
     _frozen_tainted = False
-    _auto_freeze    = False
+    _invalid        = False
+
     _evaluating     = False
+
+    # Options
+    _auto_freeze    = False
     _immediate      = False
     # _always_tainted = False
 
@@ -88,6 +92,26 @@ class Node(legs.Legs):
     @property
     def immediate(self):
         return self._immediate
+
+    @property
+    def invalid(self):
+        return self._invalid
+
+    @invalid.setter
+    def invalid(self, invalid):
+        if invalid:
+            self._tainted = True
+            self._frozen  = False
+            self._frozen_tainted = False
+        else:
+            for input in self.inputs:
+                if input.invalid:
+                    return
+
+        self._invalid = invalid
+
+        for output in self.outputs:
+            output.invalid = invalid
 
     @property
     def graph(self):
@@ -179,6 +203,9 @@ class Node(legs.Legs):
         raise Exception('Unimplemented method: use FunctionNode, StaticNode or MemberNode')
 
     def eval(self):
+        if self.invalid:
+            raise Exception('Unable to evaluate invalid transformation')
+
         self._evaluating = True
 
         try:

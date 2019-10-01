@@ -37,6 +37,17 @@ class Output(object):
         return self._inputs
 
     @property
+    def invalid(self):
+        """Checks the validity of the current node"""
+        return self._node.invalid
+
+    @invalid.setter
+    def invalid(self, invalid):
+        """Sets the validity of the following nodes"""
+        for input in self.inputs:
+            input.invalid = invalid
+
+    @property
     def data(self):
         self._node.touch()
         return self._data
