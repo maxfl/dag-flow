@@ -69,9 +69,9 @@ class Output(object):
     __rshift__  = rshift
     __rlshift__ = lshift
 
-    def taint(self):
+    def taint(self, force=False):
         for input in self._inputs:
-            input.taint()
+            input.taint(force)
 
     def touch(self):
         return self._node.touch()

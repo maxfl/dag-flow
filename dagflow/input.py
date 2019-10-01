@@ -60,8 +60,8 @@ class Input(object):
     def touch(self):
         return self._output.touch()
 
-    def taint(self):
-        self._node.taint()
+    def taint(self, force=False):
+        self._node.taint(force)
 
     def connected(self):
         return bool(self._output)

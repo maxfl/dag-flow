@@ -9,12 +9,15 @@ class Node(legs.Legs):
     _graph          = tools.undefinedgraph
     _fcn            = tools.undefinedfunction
     _fcn_chain      = None
+
+    # Taintflag and options
     _tainted        = True
     _frozen         = False
     _frozen_tainted = False
     _auto_freeze    = False
     _evaluating     = False
     _immediate      = False
+    _always_tainted = False
 
     def __init__(self, name, **kwargs):
         legs.Legs.__init__(self, missing_input_handler=kwargs.pop('missing_input_handler', None))
@@ -30,11 +33,14 @@ class Node(legs.Legs):
             self.graph=graph.Graph.current()
         self._label = kwargs.pop('label', tools.undefinedname)
 
-        for opt in ('immediate', 'auto_freeze', 'frozen'):
+        for opt in ('immediate', 'auto_freeze', 'frozen', 'always_tainted'):
             value = kwargs.pop(opt, None)
             if value is None:
                 continue
             setattr(self, '_'+opt, bool(value))
+
+        if self._auto_freeze and self._always_tainted:
+            raise Exception('May not use `auto_freeze` and `always_tainted at the same time`')
 
         input = kwargs.pop('input', None)
         if input:
@@ -71,9 +77,9 @@ class Node(legs.Legs):
     def auto_freeze(self):
         return self._auto_freeze
 
-    @auto_freeze.setter
-    def auto_freeze(self, auto_freeze):
-        self._auto_freeze = auto_freeze
+    @property
+    def always_tainted(self):
+        return self._always_tainted
 
     @property
     def evaluating(self):
@@ -163,7 +169,7 @@ class Node(legs.Legs):
             return
 
         ret = self.eval()
-        self._tainted = False
+        self._tainted = self._always_tainted
         if self._auto_freeze:
             self._frozen = True
 
@@ -220,7 +226,7 @@ class Node(legs.Legs):
             ret = None
 
         for output in self.outputs:
-            output.taint()
+            output.taint(force)
 
         return ret
 
