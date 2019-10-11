@@ -6,7 +6,7 @@ Main goals:
 *  Lazy evaluated directed acyclic graph
 *  Concise connection syntax
 *  Plotting with graphviz
-*  Flexivility. The goal of DAGFlow is not to be efficient, but rather flexible.
+*  Flexibility. The goal of DAGFlow is not to be efficient, but rather flexible.
 
 Here is an animation, showing the process of the graph evaluation
 
